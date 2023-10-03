@@ -28,6 +28,26 @@ class _DateState extends State<Date> {
   DateTime? endDate;
   TimeOfDay? pickupTime;
   TimeOfDay? dropOffTime;
+  // Function to display an error dialog
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _openCalendarPage() async {
     final result = await Navigator.push(
@@ -82,11 +102,9 @@ class _DateState extends State<Date> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
-          title: Text(
-            "Search Cars",
-            style: TextStyle(
-                fontWeight: FontWeight.bold, fontSize: size.width * 0.06),
-          ),
+          title: Text("Set Date & Time"),
+          foregroundColor: Colors.black,
+          backgroundColor: Theme.of(context).primaryColor,
         ),
         body: SingleChildScrollView(
           child: Center(
@@ -104,64 +122,6 @@ class _DateState extends State<Date> {
                   child: Container(
                     width: size.width * 0.82,
                     height: size.height * 0.13,
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: size.width * 0.015,
-                            ),
-                            Icon(Icons.edit_location),
-                            SizedBox(
-                              width: size.width * 0.03,
-                            ),
-                            Text(
-                              "Location",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: size.width * 0.045),
-                            )
-                          ],
-                        ),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Text(
-                                "Mumbai",
-                                style: TextStyle(fontSize: size.width * 0.035),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(
-                                    MediaQuery.of(context).size.width * 0.01),
-                                child: ElevatedButton(
-                                  onPressed: () {},
-                                  child: Text(
-                                    "EDIT",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: size.width * 0.04),
-                                  ),
-                                ),
-                              ),
-                            ])
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: size.height * 0.02,
-              ),
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                child: Padding(
-                  padding:
-                      EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
-                  child: Container(
-                    width: size.width * 0.82,
-                    height: size.height * 0.18,
                     child: Column(
                       children: [
                         Row(
@@ -190,35 +150,39 @@ class _DateState extends State<Date> {
                             child: Column(
                               children: [
                                 Text(
-                                  'Start Date: ${startDate != null ? DateFormat('EEEE, d-MMMM-yy').format(startDate!) : 'Not Selected'}',
+                                  'Start Date: ${startDate != null ? DateFormat('EEEE, d MMMM yyyy').format(startDate!) : 'Not Selected'}',
                                   style:
                                       TextStyle(fontSize: size.width * 0.035),
                                 ),
                                 SizedBox(height: size.height * 0.02),
                                 Text(
-                                  'End Date: ${endDate != null ? DateFormat('EEEE, d-MMMM-yyyy').format(endDate!) : 'Not Selected'}',
+                                  'End Date: ${endDate != null ? DateFormat('EEEE, d MMMM yyyy').format(endDate!) : 'Not Selected'}',
                                   style:
                                       TextStyle(fontSize: size.width * 0.035),
                                 ),
                               ],
                             ),
                           ),
-                          Padding(
-                            padding: EdgeInsets.all(
-                                MediaQuery.of(context).size.width * 0.01),
-                            child: ElevatedButton(
-                              onPressed: _openCalendarPage,
-                              child: Text(
-                                "EDIT",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: size.width * 0.04),
-                              ),
-                            ),
-                          ),
                         ]),
                       ],
                     ),
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    primary: Color.fromRGBO(
+                        254, 205, 59, 1.0), // Set the background color
+                    onPrimary: Colors.black,
+                    side: BorderSide(color: Colors.deepPurple)),
+                onPressed: _openCalendarPage,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 80),
+                  child: Text(
+                    "EDIT",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: size.width * 0.04),
                   ),
                 ),
               ),
@@ -235,7 +199,7 @@ class _DateState extends State<Date> {
                   ),
                   child: Container(
                     width: size.width * 0.82,
-                    height: size.height * 0.225,
+                    height: size.height * 0.2,
                     child: Column(
                       children: [
                         Row(
@@ -278,6 +242,12 @@ class _DateState extends State<Date> {
                             child: Column(
                               children: [
                                 ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      primary: Color.fromRGBO(254, 205, 59,
+                                          1.0), // Set the background color
+                                      onPrimary: Colors.black,
+                                      side:
+                                          BorderSide(color: Colors.deepPurple)),
                                   onPressed: () async {
                                     final TimeOfDay? selectedTime =
                                         await showTimePicker(
@@ -302,6 +272,12 @@ class _DateState extends State<Date> {
                                   height: size.height * 0.01,
                                 ),
                                 ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      primary: Color.fromRGBO(254, 205, 59,
+                                          1.0), // Set the background color
+                                      onPrimary: Colors.black,
+                                      side:
+                                          BorderSide(color: Colors.deepPurple)),
                                   onPressed: () async {
                                     final TimeOfDay? selectedTime =
                                         await showTimePicker(
@@ -331,37 +307,50 @@ class _DateState extends State<Date> {
                   ),
                 ),
               ),
-              SizedBox(
-                height: size.height * 0.02,
-              ),
-              Text(
-                'Total Price: \$${calculateTotalPrice(startDate, endDate, pickupTime, dropOffTime).toStringAsFixed(2)}',
-                style: TextStyle(fontSize: size.width * 0.035),
-              ),
+              // SizedBox(
+              //   height: size.height * 0.02,
+              // ),
+              // Text(
+              //   'Total Price: \$${calculateTotalPrice(startDate, endDate, pickupTime, dropOffTime).toStringAsFixed(2)}',
+              //   style: TextStyle(fontSize: size.width * 0.035),
+              // ),
               SizedBox(
                 height: 20,
               ),
               ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      primary: Color.fromRGBO(
+                          254, 205, 59, 1.0), // Set the background color
+                      onPrimary: Colors.black,
+                      side: BorderSide(color: Colors.deepPurple)),
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => Car_detail(
-                                  carn: widget.carn,
-                                  id: widget.id,
-                                  sharedCars: widget.sharedCars,
-                                  cprice: calculateTotalPrice(startDate,
-                                      endDate, pickupTime, dropOffTime),
-                                  hprice: widget.cprice,
-                                  sdate: DateFormat('d MMMM')
-                                      .format(startDate!)
-                                      .toString(),
-                                  edate: DateFormat('d MMMM')
-                                      .format(endDate!)
-                                      .toString(),
-                                  stime: formatTime(pickupTime!).toString(),
-                                  etime: formatTime(pickupTime!).toString(),
-                                )));
+                    if (startDate == null ||
+                        endDate == null ||
+                        pickupTime == null ||
+                        dropOffTime == null) {
+                      // Show an error dialog
+                      _showErrorDialog('Please select all required fields.');
+                    } else {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Car_detail(
+                                    carn: widget.carn,
+                                    id: widget.id,
+                                    sharedCars: widget.sharedCars,
+                                    cprice: calculateTotalPrice(startDate,
+                                        endDate, pickupTime, dropOffTime),
+                                    hprice: widget.cprice,
+                                    sdate: DateFormat('d MMMM')
+                                        .format(startDate!)
+                                        .toString(),
+                                    edate: DateFormat('d MMMM')
+                                        .format(endDate!)
+                                        .toString(),
+                                    stime: formatTime(pickupTime!).toString(),
+                                    etime: formatTime(pickupTime!).toString(),
+                                  )));
+                    }
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(10),

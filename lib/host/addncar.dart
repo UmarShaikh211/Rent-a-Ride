@@ -53,11 +53,14 @@ class _CarAddState extends State<CarAdd> {
       setState(() {
         lastCarId = carId;
       });
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => HostNav())); //HostLic(userId)
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Car created successfully')),
+      );
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => HostLic(userId),
+        ),
+        (route) => false, // This prevents going back to the previous page.
       );
     } catch (e) {
       print("Error creating car: $e");
@@ -76,38 +79,68 @@ class _CarAddState extends State<CarAdd> {
           SizedBox(
             height: 20,
           ),
-          Card(
-            child: Container(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: Icon(
-                      Icons.ac_unit_outlined,
-                    ),
-                    title: Text("You will Become Rich"),
+          Padding(
+            padding: const EdgeInsets.symmetric(),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Container(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          Icons.ac_unit_outlined,
+                        ),
+                        title: Text(
+                          "Earn Extra Income",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          "Make money by renting out your car when you're not using it.",
+                        ),
+                      ),
+                      Divider(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.ac_unit_outlined,
+                        ),
+                        title: Text(
+                          "Low Maintenance Costs",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          "Cover your car's expenses through rentals.",
+                        ),
+                      ),
+                      Divider(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.ac_unit_outlined,
+                        ),
+                        title: Text(
+                          "Flexible Schedule",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          "Choose when and for how long you want to rent your car.",
+                        ),
+                      ),
+                      Divider(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.ac_unit_outlined,
+                        ),
+                        title: Text(
+                          "Insurance Coverage",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          "Enjoy peace of mind with insurance protection for renters.",
+                        ),
+                      ),
+                    ],
                   ),
-                  Divider(),
-                  ListTile(
-                    leading: Icon(
-                      Icons.ac_unit_outlined,
-                    ),
-                    title: Text("You will Become Rich"),
-                  ),
-                  Divider(),
-                  ListTile(
-                    leading: Icon(
-                      Icons.ac_unit_outlined,
-                    ),
-                    title: Text("You will Become Rich"),
-                  ),
-                  Divider(),
-                  ListTile(
-                    leading: Icon(
-                      Icons.ac_unit_outlined,
-                    ),
-                    title: Text("You will Become Rich"),
-                  )
-                ],
+                ),
               ),
             ),
           ),

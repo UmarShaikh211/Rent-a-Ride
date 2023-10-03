@@ -6,18 +6,22 @@ part 'global.g.dart';
 @HiveType(typeId: 0)
 class BookingStatus {
   @HiveField(0)
-  final String name;
+  final String carid;
 
   @HiveField(1)
-  final String image;
+  final String name;
 
   @HiveField(2)
-  final String datetime;
+  final String image;
 
   @HiveField(3)
+  final String datetime;
+
+  @HiveField(4)
   final String bookingStatus;
 
   BookingStatus({
+    required this.carid,
     required this.name,
     required this.image,
     required this.datetime,
@@ -37,12 +41,16 @@ class FavoriteCar {
   late String location;
 
   @HiveField(3)
+  late String trans;
+
+  @HiveField(4)
   late double price;
 
   FavoriteCar({
     required this.name,
     required this.image,
     required this.location,
+    required this.trans,
     required this.price,
   });
 }

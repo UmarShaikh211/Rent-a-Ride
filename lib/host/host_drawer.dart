@@ -1,16 +1,25 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rentcartest/host/addncar.dart';
+import 'package:rentcartest/host/faq.dart';
+import 'package:rentcartest/host/host_bio.dart';
 import 'package:rentcartest/host/host_features.dart';
 import 'package:rentcartest/host/host_license.dart';
 import 'package:rentcartest/host/host_navbar.dart';
+import 'package:rentcartest/host/hpolicy.dart';
+import 'package:rentcartest/host/profile_pages/pricing.dart';
 import 'package:rentcartest/user/navbar.dart';
 import 'package:rentcartest/user/some.dart' as someApi;
 import 'package:rentcartest/user/new.dart';
 
 import '../main.dart';
+import '../user/global.dart';
 import 'host_analytics.dart';
 import 'host_home.dart';
 import 'host_image.dart';
+import 'package:http/http.dart' as http;
 
 class HostDraw extends StatefulWidget {
   const HostDraw({super.key});
@@ -27,13 +36,19 @@ class _HostDrawState extends State<HostDraw> {
   List<DrawerItem> _options = [
     DrawerItem(
       widget: InkWell(
+        onTap: () {
+          navigatorKey.currentState?.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => CarAdd()),
+            (route) => false,
+          );
+        },
         child: Row(
           children: [
-            Icon(Icons.access_time_outlined),
+            Icon(Icons.directions_car_filled_sharp),
             SizedBox(
               width: 20,
             ),
-            Text("Your Listings")
+            Text("Add a Car")
           ],
         ),
       ),
@@ -42,10 +57,7 @@ class _HostDrawState extends State<HostDraw> {
       widget: InkWell(
         onTap: () {
           navigatorKey.currentState?.push(
-            MaterialPageRoute(
-                builder: (context) => Hostimg(
-                      arguments: {},
-                    )),
+            MaterialPageRoute(builder: (context) => Hostimg()),
           );
         },
         child: Row(
@@ -63,16 +75,16 @@ class _HostDrawState extends State<HostDraw> {
       widget: InkWell(
         onTap: () {
           navigatorKey.currentState?.push(
-            MaterialPageRoute(builder: (context) => HostHome()),
+            MaterialPageRoute(builder: (context) => HostBio()),
           );
         },
         child: Row(
           children: [
-            Icon(Icons.car_crash_outlined),
+            Icon(Icons.person),
             SizedBox(
               width: 20,
             ),
-            Text("Add Car Features")
+            Text("Add Host Bio")
           ],
         ),
       ),
@@ -81,21 +93,27 @@ class _HostDrawState extends State<HostDraw> {
       widget: InkWell(
         onTap: () {
           navigatorKey.currentState?.push(
-            MaterialPageRoute(builder: (context) => CarAdd()),
+            MaterialPageRoute(
+                builder: (context) => Pricing(
+                      arguments: {},
+                    )),
           );
         },
         child: Row(
           children: [
-            Icon(Icons.directions_car_filled_sharp),
+            Icon(Icons.money_sharp),
             SizedBox(
               width: 20,
             ),
-            Text("Add another Car")
+            Text("Set Car Price")
           ],
         ),
       ),
     ),
-    DrawerItem(widget: Divider()),
+    DrawerItem(
+        widget: Divider(
+      thickness: 2,
+    )),
     DrawerItem(
       widget: InkWell(
         child: Row(
@@ -111,19 +129,27 @@ class _HostDrawState extends State<HostDraw> {
     ),
     DrawerItem(
       widget: InkWell(
+        onTap: () {
+          navigatorKey.currentState
+              ?.push(MaterialPageRoute(builder: (context) => FAQPage()));
+        },
         child: Row(
           children: [
             Icon(Icons.question_mark_outlined),
             SizedBox(
               width: 20,
             ),
-            Text("Frequently Asked Questions")
+            Text("FAQ")
           ],
         ),
       ),
     ),
     DrawerItem(
       widget: InkWell(
+        onTap: () {
+          navigatorKey.currentState
+              ?.push(MaterialPageRoute(builder: (context) => HostPolicy()));
+        },
         child: Row(
           children: [
             Icon(Icons.book_outlined),
@@ -204,10 +230,54 @@ class DrawerItem {
   DrawerItem({required this.widget});
 }
 
-class drawertop extends StatelessWidget {
+class drawertop extends StatefulWidget {
   const drawertop({
     super.key,
   });
+
+  @override
+  State<drawertop> createState() => _drawertopState();
+}
+
+class _drawertopState extends State<drawertop> {
+  String? userId;
+  String uname = 'Unknown';
+  String uemail = 'Unknown';
+  String uphone = 'Unknown';
+
+  @override
+  void initState() {
+    super.initState();
+    final userProvider = Provider.of<UserDataProvider>(context, listen: false);
+    userId = userProvider.userId;
+    fetchUserDetails(userId!);
+  }
+
+  Future<void> fetchUserDetails(String userId) async {
+    try {
+      final response =
+          await http.get(Uri.parse('$globalapiUrl/users/$userId/'));
+      if (response.statusCode == 200) {
+        final carData = json.decode(response.body);
+        final a = carData['name'];
+        final i = carData['email'];
+        final p = carData['phone'];
+
+        setState(() {
+          uname = a ?? 'Unknown'; // Set the carSeats variable
+          uemail = i ?? 'Unknown'; // Set the carSeats variable
+          uphone = p ?? 'Unknown'; // Set the carSeats variable
+        });
+      } else {
+        // Handle error response (e.g., show an error message)
+        print('Error: ${response.statusCode}');
+        print('Response: ${response.body}');
+      }
+    } catch (e) {
+      // Handle network or other errors
+      print('Error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -242,21 +312,21 @@ class drawertop extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          "Umar Shaikh",
+                          uname,
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.cyanAccent,
                               fontSize: 17),
                         ),
                         Text(
-                          "xyz@gmail.com",
+                          uemail,
                           style: TextStyle(color: Colors.white),
                         ),
                         SizedBox(
                           height: 5,
                         ),
                         Text(
-                          "9833427514",
+                          uphone,
                           style: TextStyle(color: Colors.white),
                         )
                       ],

@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../main.dart';
+
 class ApiService {
-  //static const String apiUrl = 'http://172.20.10.3:8000/'; // Umar
-  static const String apiUrl = 'http://192.168.0.120:8000/'; //Home
+  // static const String apiUrl = 'http://172.20.10.3:8000/'; // Umar
+  // //static const String apiUrl = 'http://192.168.0.120:8000'; //Home
 
   static Future<void> createUser(
       String name, String email, String phone) async {
-    final usersResponse = await http.get(Uri.parse('$apiUrl/users/'));
+    final usersResponse = await http.get(Uri.parse('$globalapiUrl/users/'));
     if (usersResponse.statusCode == 200) {
       final users = jsonDecode(usersResponse.body);
       if (users is List) {
@@ -32,7 +34,7 @@ class ApiService {
 
     // If the existing user wasn't found, create a new user
     final userResponse = await http.post(
-      Uri.parse('$apiUrl/users/'),
+      Uri.parse('$globalapiUrl/users/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -50,7 +52,7 @@ class ApiService {
 
   static Future<String> createCar(String userId) async {
     final carResponse = await http.post(
-      Uri.parse('$apiUrl/cars/'),
+      Uri.parse('$globalapiUrl/cars/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -80,7 +82,7 @@ class ApiService {
 // Add parameters for other notifications
   ) async {
     final notificationResponse = await http.post(
-      Uri.parse('$apiUrl/notifications/'),
+      Uri.parse('$globalapiUrl/notifications/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -101,11 +103,37 @@ class ApiService {
     }
   }
 
+  static Future<void> createbank(
+    String userid,
+    String accountno,
+    String ifsccode,
+    String panno,
+
+// Add parameters for other notifications
+  ) async {
+    final bankResponse = await http.post(
+      Uri.parse('$globalapiUrl/bank/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'user': userid,
+        'acc_no': accountno,
+        'ifsc': ifsccode,
+        'pan': panno,
+      }),
+    );
+
+    if (bankResponse.statusCode != 201) {
+      throw Exception('Failed to add Bank Account');
+    }
+  }
+
 // In your ApiService class
 
   static Future<String> getLastCarId(String userId) async {
     final carsResponse =
-        await http.get(Uri.parse('$apiUrl/cars/?user=$userId'));
+        await http.get(Uri.parse('$globalapiUrl/cars/?user=$userId'));
     if (carsResponse.statusCode == 200) {
       final cars = jsonDecode(carsResponse.body);
       if (cars is List && cars.isNotEmpty) {
@@ -121,7 +149,7 @@ class ApiService {
   }
 
   static Future<String> getLastUserId() async {
-    final usersResponse = await http.get(Uri.parse('$apiUrl/users/'));
+    final usersResponse = await http.get(Uri.parse('$globalapiUrl/users/'));
     if (usersResponse.statusCode == 200) {
       final users = jsonDecode(usersResponse.body);
       if (users is List && users.isNotEmpty) {
@@ -135,7 +163,7 @@ class ApiService {
 
   static Future<bool> doesUserExist(
       String name, String email, String phone) async {
-    final usersResponse = await http.get(Uri.parse('$apiUrl/users/'));
+    final usersResponse = await http.get(Uri.parse('$globalapiUrl/users/'));
     if (usersResponse.statusCode == 200) {
       final users = jsonDecode(usersResponse.body);
       if (users is List) {
@@ -150,7 +178,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getUserByNameEmailPhone(
       String name, String email, String phone) async {
-    final usersResponse = await http.get(Uri.parse('$apiUrl/users/'));
+    final usersResponse = await http.get(Uri.parse('$globalapiUrl/users/'));
     if (usersResponse.statusCode == 200) {
       final users = jsonDecode(usersResponse.body);
       if (users is List) {
@@ -172,7 +200,6 @@ class ApiService {
     String license,
     String carBrand,
     String carModel,
-    String carVariant,
     String carCity,
     String carYear,
     String carFuel,
@@ -182,7 +209,7 @@ class ApiService {
     String carChassisNo,
   ) async {
     final notificationResponse = await http.post(
-      Uri.parse('$apiUrl/addcars/'),
+      Uri.parse('$globalapiUrl/addcars/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -191,7 +218,6 @@ class ApiService {
         'License': license,
         'CarBrand': carBrand,
         'CarModel': carModel,
-        'CarVariant': carVariant,
         'CarCity': carCity,
         'CarYear': carYear,
         'CarFuel': carFuel,
@@ -209,7 +235,7 @@ class ApiService {
 
   static Future<void> createCarForUser(String userId) async {
     final carResponse = await http.post(
-      Uri.parse('$apiUrl/cars/'),
+      Uri.parse('$globalapiUrl/cars/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -226,7 +252,7 @@ class ApiService {
 
   static Future<List<Map<String, dynamic>>> getUserCars(String userId) async {
     final carsResponse =
-        await http.get(Uri.parse('$apiUrl/cars/?user=$userId'));
+        await http.get(Uri.parse('$globalapiUrl/cars/?user=$userId'));
     if (carsResponse.statusCode == 200) {
       final cars = jsonDecode(carsResponse.body);
       if (cars is List) {
@@ -241,7 +267,7 @@ class ApiService {
   static Future<void> updateIsShared(String carId, bool isShared) async {
     try {
       final response = await http.put(
-        Uri.parse('$apiUrl/updatesharecar/$carId/'),
+        Uri.parse('$globalapiUrl/updatesharecar/$carId/'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -257,6 +283,106 @@ class ApiService {
       }
     } catch (e) {
       print('Error updating isshared: $e');
+    }
+  }
+
+  static Future<bool> checkAddCarFilled(int carId) async {
+    try {
+      // Debug: Print the selectedCarId to verify it's correct
+      print("Selected Car ID: $carId");
+
+      // Query your backend to check if AddCar data is filled for the specified carId
+      // Return true if it's filled, otherwise return false
+      // Example:
+      final response = await http.get(Uri.parse('$globalapiUrl/cars/$carId/'));
+      print("API URL: $globalapiUrl/cars/$carId");
+      // Debug: Print the API response status code
+      print("API Response Status Code: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        // Debug: Print the API response data
+        print("API Response Data: $data");
+
+        // Debug: Print the isFilled value extracted from the API response
+        final isFilled = data['added_cars'][0]['isFilled'] ?? false;
+        print("isFilled Value: $isFilled");
+
+        return isFilled;
+      }
+
+      // Debug: Print an error message if the API call fails
+      print("API Call Failed with Status Code: ${response.statusCode}");
+
+      return false; // Handle error cases appropriately
+    } catch (e) {
+      // Debug: Print any exception that occurs during the API call
+      print("Error checking AddCar data: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> checkHostBioFilled(int carId) async {
+    try {
+      final response = await http.get(Uri.parse('$globalapiUrl/cars/$carId/'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        final isFilled = data['host_bio'][0]['isFilled'] ?? false;
+
+        return isFilled;
+      }
+
+      print("API Call Failed with Status Code: ${response.statusCode}");
+
+      return false; // Handle error cases appropriately
+    } catch (e) {
+      print("Error checking AddCar data: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> checkCarImageFilled(int carId) async {
+    try {
+      final response = await http.get(Uri.parse('$globalapiUrl/cars/$carId/'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        final isFilled = data['car_image'][0]['isFilled'] ?? false;
+
+        return isFilled;
+      }
+
+      print("API Call Failed with Status Code: ${response.statusCode}");
+
+      return false; // Handle error cases appropriately
+    } catch (e) {
+      print("Error checking AddCar data: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> checkPriceFilled(int carId) async {
+    try {
+      final response = await http.get(Uri.parse('$globalapiUrl/cars/$carId/'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        final isFilled = data['car_price'][0]['isFilled'] ?? false;
+
+        return isFilled;
+      }
+
+      print("API Call Failed with Status Code: ${response.statusCode}");
+
+      return false; // Handle error cases appropriately
+    } catch (e) {
+      print("Error checking AddCar data: $e");
+      return false;
     }
   }
 }

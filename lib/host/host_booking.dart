@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:rentcartest/main.dart';
 import 'package:rentcartest/user/some.dart' as someApi;
 import 'package:http/http.dart' as http;
 import '../user/global.dart';
+import 'host_drawer.dart';
 
 class Hostbook extends StatefulWidget {
   const Hostbook({Key? key}) : super(key: key);
@@ -18,8 +20,9 @@ class _HostbookState extends State<Hostbook> {
   List<Map<String, dynamic>> userCars = [];
   String? selectedCarId = '';
   String? userId;
-  //static const String apiUrl = 'http://172.20.10.3:8000/'; //Umar
-  static const String apiUrl = 'http://192.168.0.120:8000/';
+
+  // //static const String apiUrl = 'http://172.20.10.3:8000/'; //Umar
+  // static const String apiUrl = 'http://192.168.0.120:8000';
   bool bookingCancelled = false; // Track booking status
 
   @override
@@ -57,66 +60,96 @@ class _HostbookState extends State<Hostbook> {
     }
   }
 
+  String getCarNameById(String carId) {
+    final car = userCars.firstWhere(
+      (car) => car['id'].toString() == carId,
+      orElse: () => {},
+    );
+
+    if (car != null) {
+      final addedCars = car['added_cars'] as List<dynamic>;
+      if (addedCars.isNotEmpty) {
+        final carBrand = addedCars[0]['CarBrand'];
+        final carModel = addedCars[0]['CarModel'];
+
+        if (carBrand != null && carModel != null) {
+          return '$carBrand $carModel';
+        }
+      }
+    }
+
+    return 'Unknown Car';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Bookings"),
-        backgroundColor: Colors.teal,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        inputDecorationTheme: customInputDecorationTheme(),
       ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 20,
-          ),
-          Center(
-            child: Container(
-              width: 320,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: DropdownButtonFormField<String>(
-                value: selectedCarId,
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedCarId = newValue;
-                    print("My problem" + selectedCarId!);
-                  });
-                },
-                items: userCars.map((car) {
-                  final carId = car['id'].toString();
-                  return DropdownMenuItem<String>(
-                    value: carId,
-                    child: Text('Car ID: $carId'),
-                  );
-                }).toList(),
-                decoration: InputDecoration(
-                  labelText: 'Select a car',
-                  border: OutlineInputBorder(),
+      child: Scaffold(
+        drawer: HostDraw(),
+        appBar: AppBar(
+          title: Text("Bookings"),
+          backgroundColor: Color.fromRGBO(254, 205, 59, 1.0),
+          foregroundColor: Colors.black,
+        ),
+        body: Column(
+          children: [
+            SizedBox(
+              height: 20,
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  width: 320,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: selectedCarId,
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedCarId = newValue;
+                        print("My problem" + selectedCarId!);
+                      });
+                    },
+                    items: userCars.map((car) {
+                      final carId = car['id'].toString();
+                      final carName = getCarNameById(carId);
+                      return DropdownMenuItem<String>(
+                          value: carId, child: Text('$carName'));
+                    }).toList(),
+                    decoration: InputDecoration(
+                      labelText: 'Select a car',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 20),
-          FutureBuilder<List<Map<String, dynamic>>>(
-            future:
-                fetchTripsByCarId(selectedCarId!), // Pass selectedCarId here
-            builder: (BuildContext context,
-                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData ||
-                  snapshot.data == null ||
-                  snapshot.data!.isEmpty) {
-                return Center(child: Text('No trips available.'));
-              } else {
-                return TripsList(trips: snapshot.data!);
-              }
-            },
-          ),
-        ],
+            SizedBox(height: 20),
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future:
+                  fetchTripsByCarId(selectedCarId!), // Pass selectedCarId here
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData ||
+                    snapshot.data == null ||
+                    snapshot.data!.isEmpty) {
+                  return Center(child: Text('No trips available.'));
+                } else {
+                  return TripsList(trips: snapshot.data!);
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -131,7 +164,7 @@ class _HostbookState extends State<Hostbook> {
       print('Fetching trips for car ID: $carId'); // For debugging
 
       final response = await http.get(
-        Uri.parse('$apiUrl/trips/?car=$carId'),
+        Uri.parse('$globalapiUrl/trips/?car=$carId'),
       );
 
       print('API Response: ${response.body}'); // For debugging
@@ -167,6 +200,7 @@ class TripsList extends StatelessWidget {
       height: 400,
       width: 400,
       child: ListView.builder(
+        physics: NeverScrollableScrollPhysics(),
         itemCount: trips.length,
         itemBuilder: (BuildContext context, int index) {
           final trip = trips[index];
@@ -183,6 +217,9 @@ class TripsList extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        SizedBox(
+                          height: 10,
+                        ),
                         Text(
                           '${trip['cname']}',
                           style: TextStyle(
@@ -203,8 +240,23 @@ class TripsList extends StatelessWidget {
                             ),
                           ),
                         ),
-                        ElevatedButton(
-                            onPressed: () {}, child: Text("Cancel Booking"))
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Text(
+                                "Confirmed",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        )
                       ],
                     ),
                   ),
@@ -214,4 +266,23 @@ class TripsList extends StatelessWidget {
       ),
     );
   }
+}
+
+InputDecorationTheme customInputDecorationTheme() {
+  OutlineInputBorder outlineInputBorder = OutlineInputBorder(
+    // Customize the border radius as needed
+    borderSide: BorderSide(
+        color: Colors.deepPurple), // Customize the border color as needed
+    gapPadding: 5,
+  );
+  return InputDecorationTheme(
+    floatingLabelBehavior:
+        FloatingLabelBehavior.auto, // Customize the label behavior if needed
+    contentPadding: EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 10), // Customize the content padding if needed
+    enabledBorder: outlineInputBorder,
+    focusedBorder: outlineInputBorder,
+    border: outlineInputBorder,
+  );
 }

@@ -37,22 +37,24 @@ class _CarModelSheetState extends State<CarModelSheet> {
       context: context,
       isScrollControlled: true, // Set this to true to increase the height
       builder: (BuildContext context) {
-        return SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _textInputController,
-                  decoration: InputDecoration(labelText: 'Car Brand'),
-                ),
-                SizedBox(height: 16.0),
-                GridView.count(
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _textInputController,
+                decoration: InputDecoration(labelText: 'Car Brand'),
+              ),
+              SizedBox(height: 16.0),
+              SingleChildScrollView(
+                child: GridView.count(
                   crossAxisCount: 3, // Number of columns in each row
                   crossAxisSpacing: 8.0,
                   mainAxisSpacing: 8.0,
                   shrinkWrap: true,
+                  physics:
+                      AlwaysScrollableScrollPhysics(), // Added physics here
                   children: carModels.entries
                       .map(
                         (entry) => GestureDetector(
@@ -81,23 +83,23 @@ class _CarModelSheetState extends State<CarModelSheet> {
                       )
                       .toList(),
                 ),
-                SizedBox(height: 16.0),
-                Card(
-                  child: Container(
-                      width: 300,
-                      height: 40,
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                            backgroundColor:
-                                MaterialStatePropertyAll<Color>(Colors.green)),
-                        onPressed: () {
-                          _saveText();
-                        },
-                        child: Text("Save"),
-                      )),
-                ),
-              ],
-            ),
+              ),
+              SizedBox(height: 16.0),
+              Card(
+                child: Container(
+                    width: 300,
+                    height: 40,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll<Color>(Colors.green)),
+                      onPressed: () {
+                        _saveText();
+                      },
+                      child: Text("Save"),
+                    )),
+              ),
+            ],
           ),
         );
       },

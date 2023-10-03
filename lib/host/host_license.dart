@@ -69,52 +69,54 @@ class _HostLicState extends State<HostLic> {
         title: Text("Add Car"),
         backgroundColor: Colors.blueAccent,
       ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: size.height * 0.05,
-          ),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: TextField(
-              controller: license,
-              decoration: InputDecoration(
-                labelText: 'Car License Number',
-                hintText: 'Enter License Number',
-                border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(
+              height: size.height * 0.05,
+            ),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: TextField(
+                controller: license,
+                decoration: InputDecoration(
+                  labelText: 'Car License Number',
+                  hintText: 'Enter License Number',
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 90),
-            child: Text(
-              "Please Enter in MH02BA1234 format",
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey,
+            Padding(
+              padding: const EdgeInsets.only(right: 90),
+              child: Text(
+                "Please Enter in MH02BA1234 format",
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey,
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: size.height * 0.5,
-          ),
-          BottomAppBar(
-            child: Card(
-              child: Container(
-                  width: 300,
-                  height: 40,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStatePropertyAll<Color>(Colors.green)),
-                    onPressed: () {
-                      _handleAddNotification();
-                    },
-                    child: Text("Next"),
-                  )),
+            SizedBox(
+              height: size.height * 0.6,
             ),
-          )
-        ],
+            BottomAppBar(
+              child: Card(
+                child: Container(
+                    width: 300,
+                    height: 40,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll<Color>(Colors.green)),
+                      onPressed: () {
+                        _handleAddNotification();
+                      },
+                      child: Text("Next"),
+                    )),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

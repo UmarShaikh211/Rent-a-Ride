@@ -59,6 +59,13 @@ dependencies:
   hive_flutter: ^1.1.0
   build_runner: ^2.4.6
   shimmer: ^3.0.0
+  cached_network_image: ^3.2.3
+  firebase_core: ^2.16.0
+  cloud_firestore: ^4.9.2
+  firebase_auth: ^4.10.0
+  flutter_rating_bar: ^4.0.1
+  share_plus: ^7.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

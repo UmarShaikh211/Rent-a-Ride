@@ -27,8 +27,7 @@ class _HostEliState extends State<HostEli> {
 // Normal Code
   TextEditingController _license = TextEditingController();
   String? selectedBrand;
-  String? selectedModel;
-  String? selectedVariant;
+  TextEditingController _carmodel = TextEditingController();
 
   TextEditingController _textEditingController = TextEditingController();
   String? selectedCity;
@@ -51,19 +50,6 @@ class _HostEliState extends State<HostEli> {
     });
   }
 
-  void _onCarModelSelected(String selectedCarModel) {
-    setState(() {
-      // Update your selectedCarBrand variable with the selected value
-      selectedModel = selectedCarModel;
-    });
-  }
-
-  void _onCarVariantSelected(String selectedCarVariant) {
-    setState(() {
-      // Update your selectedCarBrand variable with the selected value
-      selectedVariant = selectedCarVariant;
-    });
-  }
   //
   // void submitForm() async {
   //   String License = widget.data ?? 'MH034TZ3243';
@@ -171,8 +157,7 @@ class _HostEliState extends State<HostEli> {
       final license = widget.arguments['licenses'] ?? 'MH034TZ3243';
       final carBrand =
           selectedBrand ?? ''; // Update with the actual selected brand
-      String carModel = selectedModel ?? '';
-      String carVariant = selectedVariant ?? '';
+      String carModel = _carmodel.text ?? " ";
       String carCity =
           selectedCity ?? ''; // Update with the actual selected city
       String carYear =
@@ -202,19 +187,8 @@ class _HostEliState extends State<HostEli> {
         print('Please accept the Terms & Conditions.');
         return;
       }
-      await ApiService.addnewcarData(
-          carId,
-          license,
-          carBrand,
-          carModel,
-          carVariant,
-          carCity,
-          carYear,
-          carFuel,
-          carTrans,
-          carSeat,
-          carKm,
-          carChassisNo);
+      await ApiService.addnewcarData(carId, license, carBrand, carModel,
+          carCity, carYear, carFuel, carTrans, carSeat, carKm, carChassisNo);
 
       // Show success message or navigate to next page
     } catch (e) {
@@ -245,7 +219,7 @@ class _HostEliState extends State<HostEli> {
                   child: Card(
                     elevation: 5,
                     child: Container(
-                      height: 370,
+                      height: 280,
                       child: Column(
                         children: [
                           Padding(
@@ -268,14 +242,15 @@ class _HostEliState extends State<HostEli> {
                           SizedBox(
                             height: 15,
                           ),
-                          CarModelSheet(
-                            onCarModelSelected: _onCarModelSelected,
-                          ),
-                          SizedBox(
-                            height: 15,
-                          ),
-                          CarVariantSheet(
-                            onCarVariantSelected: _onCarVariantSelected,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: TextFormField(
+                              controller: _carmodel,
+                              decoration: InputDecoration(
+                                labelText: 'Car Model',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
                           ),
                         ],
                       ),

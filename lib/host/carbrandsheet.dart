@@ -1,4 +1,9 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+
+import '../main.dart';
+import '../user/home.dart';
 
 class CarBrandSheet extends StatefulWidget {
   final Function(String) onCarBrandSelected;
@@ -14,93 +19,104 @@ class CarBrandSheet extends StatefulWidget {
 class _CarBrandSheetState extends State<CarBrandSheet> {
   TextEditingController _textbrand = TextEditingController();
 
-  Map<String, List<String>> carBrands = {
-    'Ferrari': [
-      'assets/tesla.png',
-    ],
-    'BMW': [
-      'assets/images/apple-pay.png',
-    ],
-    'Mercedes': [
-      'assets/images/google-pay.png',
-    ],
-    'Land Rover': [
-      'https://iconscout.com/icon/land-5',
-    ],
-    'Honda': [
-      'https://iconscout.com/icon/honda-6',
-    ],
-    // Add more car brands and their image URLs as needed
-  };
+  List<BrandLogo> brands = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchBrands(); // Call _fetchBrands when the widget is initialized
+  }
+
+  Future<void> _fetchBrands() async {
+    final response = await http.get(Uri.parse('$globalapiUrl/brandlogo/'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      final List<BrandLogo> fetchedBrands = data.map((json) {
+        return BrandLogo.fromJson(json);
+      }).toList();
+
+      setState(() {
+        brands = fetchedBrands;
+      });
+    } else {
+      throw Exception('Failed to load brands');
+    }
+  }
 
   void _openBottomSheet() {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
-        return SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _textbrand,
-                  decoration: InputDecoration(labelText: 'Car Brand'),
-                ),
-                SizedBox(height: 16.0),
-                GridView.count(
-                  crossAxisCount: 3, // Number of columns in each row
-                  crossAxisSpacing: 8.0,
-                  mainAxisSpacing: 8.0,
-                  shrinkWrap: true,
-                  children: carBrands.entries
-                      .map(
-                        (entry) => GestureDetector(
-                          onTap: () => _selectCarBrand(entry.key),
-                          child: Card(
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  child: Image.network(
-                                    entry.value[0],
-                                    height: 100,
-                                    width: 100,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  entry.key,
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-                SizedBox(height: 16.0),
-                Card(
-                  child: Container(
-                    width: 300,
-                    height: 40,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStatePropertyAll<Color>(Colors.green),
-                      ),
-                      onPressed: () {
-                        _saveText();
-                      },
-                      child: Text("Save"),
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: 400, // Adjust the maxHeight as needed
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Card(
+                child: Container(
+                  width: 300,
+                  height: 40,
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStatePropertyAll<Color>(Colors.green),
                     ),
+                    onPressed: () {
+                      _saveText();
+                    },
+                    child: Text("Save"),
                   ),
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3, // Number of columns in each row
+                          crossAxisSpacing: 8.0,
+                          mainAxisSpacing: 8.0,
+                        ),
+                        itemCount: brands.length,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () =>
+                                _selectCarBrand(brands[index].brandname),
+                            child: Card(
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Image.network(
+                                      brands[index].brandimage,
+                                      height: 100,
+                                      width: 100,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    brands[index].brandname,
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -142,6 +158,20 @@ class _CarBrandSheetState extends State<CarBrandSheet> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class BrandLogo {
+  final String brandname;
+  final String brandimage;
+
+  BrandLogo({required this.brandname, required this.brandimage});
+
+  factory BrandLogo.fromJson(Map<String, dynamic> json) {
+    return BrandLogo(
+      brandname: json['brandname'],
+      brandimage: json['brandimage'],
     );
   }
 }

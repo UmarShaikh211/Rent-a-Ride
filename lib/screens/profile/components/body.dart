@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rentcartest/host/host_license.dart';
 
+import '../../../host/hlogin.dart';
 import '../../../host/host_login.dart';
 import '../../../host/host_navbar.dart';
 import 'profile_menu.dart';
@@ -25,16 +26,11 @@ class Body extends StatelessWidget {
               icon: "assets/icons/User Icon.svg",
               press: () => {
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Host_login())),
+                        MaterialPageRoute(builder: (context) => HostLogin())),
                   }),
           ProfileMenu(
-            text: "Notifications",
-            icon: "assets/icons/Bell.svg",
-            press: () {},
-          ),
-          ProfileMenu(
-            text: "Settings",
-            icon: "assets/icons/Settings.svg",
+            text: "Terms & Conditions",
+            icon: "assets/icons/Question mark.svg",
             press: () {},
           ),
           ProfileMenu(

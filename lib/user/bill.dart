@@ -8,6 +8,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:rentcartest/user/navbar.dart';
 import 'package:rentcartest/user/trips.dart';
 import 'package:http/http.dart' as http;
+import '../main.dart';
 import 'global.dart';
 import 'home.dart';
 
@@ -18,6 +19,7 @@ class Bill extends StatefulWidget {
   final double tfare;
   final String sdate;
   final String edate;
+  final String dmgi;
   const Bill({
     super.key,
     required this.carname,
@@ -26,6 +28,7 @@ class Bill extends StatefulWidget {
     required this.tfare,
     required this.sdate,
     required this.edate,
+    required this.dmgi,
   });
 
   @override
@@ -33,14 +36,14 @@ class Bill extends StatefulWidget {
 }
 
 class _BillState extends State<Bill> {
-  int trip = 8000;
-  int dmg = 500;
+  // int trip = 8000;
+  // int dmg = 500;
   int cf = 500;
   bool paymentSuccessful = false; // Track payment status
   late var _razorpay;
   List<dynamic> sharedCars = [];
-  //static const String apiUrl = 'http://172.20.10.3:8000/'; //Umar
-  static const String apiUrl = 'http://192.168.0.120:8000/';
+  // static const String apiUrl = 'http://172.20.10.3:8000/'; //Umar
+  // //static const String apiUrl = 'http://192.168.0.120:8000/';
 
   @override
   void initState() {
@@ -78,6 +81,7 @@ class _BillState extends State<Bill> {
 
 // Save booking status data when it's updated (e.g., in _handlePaymentSuccess and _handlePaymentError methods)
     final newBookingStatus = BookingStatus(
+      carid: widget.carid,
       name: widget.carname,
       image: widget.cimage,
       datetime: dateFormat.format(now),
@@ -95,7 +99,7 @@ class _BillState extends State<Bill> {
     // String formattedTimestamp = dateFormatt.format(now);
 
     final response = await http.post(
-      Uri.parse('$apiUrl/trips/'), // Replace with your Django backend URL
+      Uri.parse('$globalapiUrl/trips/'), // Replace with your Django backend URL
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -116,7 +120,8 @@ class _BillState extends State<Bill> {
     }
 
     final incresponse = await http.post(
-      Uri.parse('$apiUrl/income/'), // Replace with your Django backend URL
+      Uri.parse(
+          '$globalapiUrl/income/'), // Replace with your Django backend URL
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -124,7 +129,7 @@ class _BillState extends State<Bill> {
         <String, dynamic>{
           'car': widget.carid,
           'cname': widget.carname,
-          'cinc': (widget.tfare + dmg + cf).toString(),
+          'cinc': (widget.tfare + widget.tfare + cf).toString(),
           'sdate': widget.sdate,
           'edate': widget.edate
         },
@@ -168,6 +173,7 @@ class _BillState extends State<Bill> {
     // Save booking status data for failed payment
 
     final newBookingStatus = BookingStatus(
+      carid: widget.carid,
       name: widget.carname,
       image: widget.cimage,
       datetime: dateFormat.format(now),
@@ -191,13 +197,15 @@ class _BillState extends State<Bill> {
   }
   @override
   Widget build(BuildContext context) {
-    int tf = widget.tfare.toInt() + dmg + cf;
+    num tf = widget.tfare.toInt() + int.parse(widget.dmgi) + cf;
     return Scaffold(
+      // appBar: AppBar(
+      //   title: Text("Bill"),
+      //   backgroundColor: Colors.teal,
+      // ),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            height: 40,
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 10,
@@ -232,7 +240,7 @@ class _BillState extends State<Bill> {
                       ListTile(
                         contentPadding: EdgeInsets.symmetric(horizontal: 10),
                         leading: Text("Damage Protection Fee"),
-                        trailing: Text("+\$" + dmg.toString()),
+                        trailing: Text("+\$" + widget.dmgi.toString()),
                       ),
                       Divider(),
                       ListTile(

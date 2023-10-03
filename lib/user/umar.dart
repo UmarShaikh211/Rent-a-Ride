@@ -1,129 +1,89 @@
-import 'package:flutter/material.dart';
-import 'package:rentcartest/host/host_features.dart';
-import 'package:rentcartest/user/car_detail.dart';
-
-import '../backend.dart';
-
-class Umar extends StatefulWidget {
-  const Umar({Key? key}) : super(key: key);
-
-  @override
-  State<Umar> createState() => _UmarState();
-}
-
-class _UmarState extends State<Umar> {
-  PopCar pCarPop = PopCar();
-
-  @override
-  Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    return Scaffold(
-      body: FutureBuilder<dynamic>(
-        future: pCarPop.postPopCar(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          } else if (snapshot.hasData) {
-            var data = snapshot.data;
-            return ListView.builder(
-              itemCount: data.length,
-              shrinkWrap: true,
-              scrollDirection: Axis.vertical,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              physics: NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                Map<String, dynamic> item = data[index];
-                if (item is Map<String, dynamic>) {
-                  return Column(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      Car_detail(carn: item['Name'])));
-                        },
-                        child: Card(
-                          child: Container(
-                            height: size.height * 0.40,
-                            width: size.width * 0.9,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  height: size.height * 0.25,
-                                  width: size.width * 0.9,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        image: NetworkImage(
-                                          item['Photo'],
-                                        ),
-                                        fit: BoxFit.cover),
-                                    borderRadius: BorderRadius.only(
-                                        topRight: Radius.circular(12),
-                                        topLeft: Radius.circular(12)),
-                                  ),
-                                  child: Stack(
-                                    alignment: AlignmentDirectional.bottomEnd,
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {},
-                                        icon:
-                                            Icon(Icons.favorite_outline_sharp),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    item['Name'],
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: size.width * 0.05),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    item['Transmission'] +
-                                        ' '
-                                            '*' +
-                                        ' ' +
-                                        item['Fuel'] +
-                                        ' '
-                                            '*' +
-                                        ' ' +
-                                        item['Seat'],
-                                    style: TextStyle(
-                                        fontSize: size.width * 0.025,
-                                        color: Colors.red),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                }
-              },
-            );
-          } else {
-            return const Center(
-              child: Text('Invalid data format'),
-            );
-          }
-        },
-      ),
-    );
-  }
-}
+// import 'package:flutter/material.dart';
+//
+// void main() {
+//   runApp(ChatBotApp());
+// }
+//
+// class ChatBotApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       home: Scaffold(
+//         appBar: AppBar(
+//           title: Text('ChatBot'),
+//         ),
+//         body: ChatBot(),
+//       ),
+//     );
+//   }
+// }
+//
+// class ChatBot extends StatefulWidget {
+//   @override
+//   _ChatBotState createState() => _ChatBotState();
+// }
+//
+// class _ChatBotState extends State<ChatBot> {
+//   final List<String> questions = [
+//     "1. What is your name?",
+//     "2. How are you today?",
+//     "3. What can you do?",
+//     "4. Tell me a joke.",
+//     "5. What's the weather like today?",
+//     "6. Thank you!"
+//   ];
+//
+//   final Map<String, String> answers = {
+//     "1. What is your name?": "My name is ChatBot.",
+//     "2. How are you today?":
+//         "I'm just a computer program, so I don't have feelings, but I'm here to help!",
+//     "3. What can you do?":
+//         "I can answer questions, provide information, and assist with various tasks.",
+//     "4. Tell me a joke.":
+//         "Why don't scientists trust atoms? Because they make up everything!",
+//     "5. What's the weather like today?":
+//         "I'm sorry, I don't have access to real-time weather information.",
+//     "6. Thank you!":
+//         "You're welcome! If you have more questions, feel free to ask."
+//   };
+//
+//   String chatMessage = "";
+//
+//   void handleQuestionTap(String question) {
+//     if (answers.containsKey(question)) {
+//       setState(() {
+//         chatMessage = "Answer: " + answers[question]!;
+//       });
+//     } else {
+//       setState(() {
+//         chatMessage = "I'm sorry, I don't have an answer to that question.";
+//       });
+//     }
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: Column(
+//         children: <Widget>[
+//           Expanded(
+//             child: ListView.builder(
+//               itemCount: questions.length,
+//               itemBuilder: (context, index) {
+//                 return ListTile(
+//                   title: Text(questions[index]),
+//                   onTap: () => handleQuestionTap(questions[index]),
+//                 );
+//               },
+//             ),
+//           ),
+//           Divider(),
+//           Padding(
+//             padding: EdgeInsets.all(16.0),
+//             child: Text(chatMessage),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

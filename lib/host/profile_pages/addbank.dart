@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rentcartest/host/profile_pages/savebank.dart';
+
+import '../../user/global.dart';
+import '../../user/some.dart';
 
 class Bank extends StatefulWidget {
   const Bank({super.key});
@@ -12,6 +16,15 @@ class _BankState extends State<Bank> {
   TextEditingController _account = TextEditingController();
   TextEditingController _ifsc = TextEditingController();
   TextEditingController _pan = TextEditingController();
+
+  String? userId;
+
+  void initState() {
+    final userProvider = Provider.of<UserDataProvider>(context, listen: false);
+    userId = userProvider.userId;
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,17 +130,23 @@ class _BankState extends State<Bank> {
                       style: ButtonStyle(
                           backgroundColor:
                               MaterialStatePropertyAll<Color>(Colors.green)),
-                      onPressed: () {
-                        String Acc = _account.text;
-                        String Ifsc = _ifsc.text;
-                        String pan = _pan.text;
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SaveBanlk(
-                                    Acc: _account.text,
-                                    Ifsc: _ifsc.text,
-                                    Pan: _pan.text)));
+                      onPressed: () async {
+                        try {
+                          final accountno = _account.text;
+                          final ifsccode = _ifsc.text;
+                          final panno = _pan.text;
+
+                          // You can similarly get other notification values from controllers
+
+                          await ApiService.createbank(
+                              userId!, accountno, ifsccode, panno
+                              // Add other notifications
+                              );
+
+                          // Show success message or navigate to next page
+                        } catch (e) {
+                          // Show error message or handle errors
+                        }
                       },
                       child: Text("Save Bank Account"),
                     )),

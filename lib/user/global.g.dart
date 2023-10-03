@@ -17,24 +17,27 @@ class BookingStatusAdapter extends TypeAdapter<BookingStatus> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return BookingStatus(
-      name: fields[0] as String,
-      image: fields[1] as String,
-      datetime: fields[2] as String,
-      bookingStatus: fields[3] as String,
+      carid: fields[0] as String,
+      name: fields[1] as String,
+      image: fields[2] as String,
+      datetime: fields[3] as String,
+      bookingStatus: fields[4] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, BookingStatus obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.carid)
       ..writeByte(1)
-      ..write(obj.image)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.datetime)
+      ..write(obj.image)
       ..writeByte(3)
+      ..write(obj.datetime)
+      ..writeByte(4)
       ..write(obj.bookingStatus);
   }
 
@@ -63,14 +66,15 @@ class FavoriteCarAdapter extends TypeAdapter<FavoriteCar> {
       name: fields[0] as String,
       image: fields[1] as String,
       location: fields[2] as String,
-      price: fields[3] as double,
+      trans: fields[3] as String,
+      price: fields[4] as double,
     );
   }
 
   @override
   void write(BinaryWriter writer, FavoriteCar obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -78,6 +82,8 @@ class FavoriteCarAdapter extends TypeAdapter<FavoriteCar> {
       ..writeByte(2)
       ..write(obj.location)
       ..writeByte(3)
+      ..write(obj.trans)
+      ..writeByte(4)
       ..write(obj.price);
   }
 

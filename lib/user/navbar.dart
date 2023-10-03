@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rentcartest/user/location.dart';
+import 'package:rentcartest/user/newprofile.dart';
 import 'package:rentcartest/user/notificationtester.dart';
 import 'package:rentcartest/user/profile.dart';
 import 'package:rentcartest/user/retrievetest.dart';
@@ -32,8 +33,12 @@ class _bottomnavState extends State<bottomnav> {
     Home(),
     Favourite(),
     Trip(),
-    Profile(),
+    NewProfile(),
   ];
+  Future<bool> _onWillPop() async {
+    // Prevent the back button from popping the current route
+    return false;
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -43,43 +48,47 @@ class _bottomnavState extends State<bottomnav> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: _children[_currentIndex],
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-              color: Colors.blueAccent,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: SafeArea(
+          child: _children[_currentIndex],
+        ),
+        bottomNavigationBar: CustomBottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onItemTapped,
+          items: [
+            BottomNavigationBarItem(
+              backgroundColor: Colors.black,
+              icon: Icon(
+                Icons.home,
+                color: Colors.blueAccent,
+              ),
+              label: "Home",
             ),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.favorite,
-              color: Colors.red,
+            BottomNavigationBarItem(
+              backgroundColor: Colors.black,
+              icon: Icon(
+                Icons.favorite,
+                color: Colors.red,
+              ),
+              label: "Favourites",
             ),
-            label: "Favourites",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.money_sharp,
-              color: Colors.greenAccent,
+            BottomNavigationBarItem(
+              backgroundColor: Colors.black,
+              icon: Icon(
+                Icons.money_sharp,
+                color: Colors.greenAccent,
+              ),
+              label: 'Trips',
             ),
-            label: 'Trips',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.person,
-              color: Colors.purple,
+            BottomNavigationBarItem(
+              backgroundColor: Colors.black,
+              icon: Icon(Icons.person, color: Colors.pink),
+              label: 'Profile',
             ),
-            label: 'Profile',
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

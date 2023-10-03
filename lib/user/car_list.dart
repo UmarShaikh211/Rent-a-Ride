@@ -1,382 +1,277 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:rentcartest/user/test.dart';
-import 'package:rentcartest/user/widget.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:rentcartest/main.dart';
+import 'package:rentcartest/user/searchcar_detail.dart';
 
-import '../backend.dart';
 import 'car_detail.dart';
 import 'filter.dart';
-import 'package:http/http.dart' as http;
 
 class Car_List extends StatefulWidget {
-  const Car_List({super.key});
+  final DateTime? startdate;
+  final DateTime? enddate;
+  final TimeOfDay stime;
+  final TimeOfDay etime;
+  final List<dynamic> sharedCars;
+
+  const Car_List(
+      {Key? key,
+      required this.startdate,
+      required this.enddate,
+      required this.stime,
+      required this.etime,
+      required this.sharedCars})
+      : super(key: key);
 
   @override
-  State<Car_List> createState() => _Car_ListState();
+  _Car_ListState createState() => _Car_ListState();
 }
 
 class _Car_ListState extends State<Car_List> {
-  List<dynamic> sharedCars = [];
-  //static const String apiUrl = 'http://172.20.10.3:8000/'; //Umar
-  static const String apiUrl = 'http://192.168.0.120:8000/'; //Home
-
+  List<dynamic> filteredCars = [];
+  // static const String apiUrl = 'http://192.168.0.120:8000/';
+  double amt = 200;
   @override
   void initState() {
     super.initState();
-    fetchData();
+    _applyFilters();
   }
 
-  Future<void> fetchData() async {
-    try {
-      final response = await http.get(Uri.parse('$apiUrl/sharecar'));
+  Future<void> _applyFilters() async {
+    if (widget.startdate != null && widget.enddate != null) {
+      final startDateStr = widget.startdate!.toLocal().toString().split(' ')[0];
+      final endDateStr = widget.enddate!.toLocal().toString().split(' ')[0];
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        setState(() {
-          sharedCars = jsonData;
-        });
-      } else {
-        print('API request failed with status code: ${response.statusCode}');
+      try {
+        final response = await http.post(
+          Uri.parse('$globalapiUrl/filter_cars_with_date/'),
+          body: jsonEncode({
+            'start_date': startDateStr,
+            'end_date': endDateStr,
+          }),
+          headers: {'Content-Type': 'application/json'},
+        );
+
+        print('API Response Status Code: ${response.statusCode}');
+        print('API Response Body: ${response.body}');
+
+        if (response.statusCode == 200) {
+          final List<dynamic> filteredCars = json.decode(response.body)['cars'];
+          setState(() {
+            this.filteredCars = filteredCars;
+          });
+        } else {
+          print('API request failed with status code: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error while making API request: $e');
       }
-    } catch (error) {
-      print('Error fetching data: $error');
     }
+  }
+
+  double calculateTotalPrice(DateTime? startDate, DateTime? endDate,
+      TimeOfDay? pickupTime, TimeOfDay? dropOffTime) {
+    if (startDate == null ||
+        endDate == null ||
+        pickupTime == null ||
+        dropOffTime == null) {
+      // Return 0 if any of the required fields is not selected
+      return 0.0;
+    }
+
+    // Calculate the total hours between start and end date
+    final duration = endDate.difference(startDate);
+    final totalHours = duration.inHours.toDouble();
+
+    // Convert pickup time and drop-off time to hours and minutes
+    final pickupHour = pickupTime.hour.toDouble();
+    final pickupMinute = pickupTime.minute.toDouble() / 60.0;
+    final dropOffHour = dropOffTime.hour.toDouble();
+    final dropOffMinute = dropOffTime.minute.toDouble() / 60.0;
+
+    // Calculate the fractional hours for pickup and drop-off
+    final pickupFractionalHour = pickupHour + pickupMinute;
+    final dropOffFractionalHour = dropOffHour + dropOffMinute;
+
+    // Calculate the total time in hours, including fractional hours
+    final totalTimeInHours =
+        totalHours + (dropOffFractionalHour - pickupFractionalHour);
+
+    // Calculate the total price
+    final totalPrice = totalTimeInHours * amt;
+
+    return totalPrice;
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.teal,
-          titleSpacing: 0,
-          title: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 23),
-                child: Row(
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          "Mumbai,Maharashtra",
-                          style: TextStyle(fontSize: size.width * 0.03),
-                        ),
-                        Text("Mon,7 July-Tue,18 July",
-                            style: TextStyle(fontSize: size.width * 0.03)),
-                      ],
-                    ),
-                    SizedBox(
-                      width: size.width * 0.17,
-                    ),
-                    IconButton(onPressed: () {}, icon: Icon(Icons.edit)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        body: Stack(children: [
-          SingleChildScrollView(
-            child: Column(children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      Container(
-                        child: Column(
-                          children: [
-                            Icon(Icons.near_me),
-                            Text(
-                              "Nearest",
-                              style: TextStyle(fontSize: size.width * 0.035),
-                            )
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 15,
-                      ),
-                      Container(
-                        child: Column(
-                          children: [
-                            Icon(Icons.star),
-                            Text(
-                              "Top Rated",
-                              style: TextStyle(fontSize: size.width * 0.035),
-                            )
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 15,
-                      ),
-                      Container(
-                        child: Column(
-                          children: [
-                            Icon(Icons.currency_rupee),
-                            Text(
-                              "Affordable",
-                              style: TextStyle(fontSize: size.width * 0.035),
-                            )
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 15,
-                      ),
-                      Container(
-                        child: Column(
-                          children: [
-                            Icon(Icons.stacked_bar_chart_sharp),
-                            Text(
-                              "Top Rated",
-                              style: TextStyle(fontSize: size.width * 0.035),
-                            )
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 15,
-                      ),
-                      Container(
-                        child: Column(
-                          children: [
-                            Icon(Icons.remove_red_eye_outlined),
-                            Text(
-                              "Most Viewed",
-                              style: TextStyle(fontSize: size.width * 0.035),
-                            )
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 15,
-                      ),
-                      Container(
-                        child: Column(
-                          children: [
-                            Icon(Icons.home_filled),
-                            Text(
-                              "Home Delivery",
-                              style: TextStyle(fontSize: size.width * 0.035),
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              SingleChildScrollView(
-                child: Column(
-                  children: [
-                    ListView.builder(
-                      itemCount: sharedCars.length,
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      physics: NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final car = sharedCars[index];
+      appBar: AppBar(
+        title: Text('Filtered Car List'),
+        backgroundColor: Color.fromRGBO(254, 205, 59, 1.0),
+        foregroundColor: Colors.black,
+      ),
+      body: ListView.builder(
+          itemCount: filteredCars.length,
+          itemBuilder: (context, index) {
+            print(
+                'ItemBuilder called. Length of filteredCars: ${filteredCars.length}');
 
-                        // Access the 'CarBrand' field
-                        final addedCars = car['added_cars'];
-                        final carImage = car['car_image'];
+            final car = filteredCars[index];
+            final carBrand = car['added_cars'][0]['CarBrand'];
+            final carModel = car['added_cars'][0]['CarModel'];
+            final carTrans = car['added_cars'][0]['CarTrans'];
+            final carFuel = car['added_cars'][0]['CarFuel'];
+            final carSeat = car['added_cars'][0]['CarSeat'];
+            final carImageUrl = '$globalapiUrl' + car['car_image'][0]['Image1'];
+            final amt = car['car_price'][0]['amount'];
 
-                        if (addedCars != null &&
-                            addedCars.isNotEmpty &&
-                            carImage != null &&
-                            carImage.isNotEmpty) {
-                          final brandName = addedCars[0]['CarBrand'];
-                          final modelName = addedCars[0]['CarModel'];
-                          final transName = addedCars[0]['CarTrans'];
-                          final fuelName = addedCars[0]['CarFuel'];
-                          final seatName = addedCars[0]['CarSeat'];
-
-/////////////////////////////////////////////////////////////////////////////////////
-                          final carimg1 = carImage[0]['Image1'];
-
-////////////////////////////////////////////////////////////////////////////////////
-
-                          return Center(
-                            child: Column(
+            return Center(
+              child: Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SearchCar_detail(
+                              carn: carBrand + ' ' + carModel,
+                              id: car['id'],
+                              sharedCars: filteredCars,
+                              cprice: calculateTotalPrice(widget.startdate,
+                                  widget.enddate, widget.stime, widget.etime),
+                              hprice: amt.toDouble(),
+                              sdate: DateFormat('d MMMM')
+                                  .format(widget.startdate!)
+                                  .toString(),
+                              edate: DateFormat('d MMMM')
+                                  .format(widget.enddate!)
+                                  .toString(),
+                              stime: formatTime(widget.stime!).toString(),
+                              etime: formatTime(widget.etime!).toString()),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      child: Container(
+                        height: size.height * 0.40,
+                        width: size.width * 0.9,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: size.height * 0.25,
+                              width: size.width * 0.9,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: NetworkImage(
+                                      '$carImageUrl',
+                                    ),
+                                    fit: BoxFit.cover),
+                                borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(12),
+                                    topLeft: Radius.circular(12)),
+                              ),
+                              child: Stack(
+                                alignment: AlignmentDirectional.bottomEnd,
+                                children: [
+                                  IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.favorite_outline_sharp),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                carBrand + ' ' + carModel,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: size.width * 0.05),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                carTrans +
+                                    ' '
+                                        '*' +
+                                    ' ' +
+                                    carFuel +
+                                    ' '
+                                        '*' +
+                                    ' ' +
+                                    carSeat,
+                                style: TextStyle(
+                                    fontSize: size.width * 0.025,
+                                    color: Colors.red),
+                              ),
+                            ),
+                            Divider(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                InkWell(
-                                  onTap: () {
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) => Car_detail(
-                                    //       carn: brandName + ' ' + modelName,
-                                    //       id: car['id'],
-                                    //       sharedCars: sharedCars,
-                                    //     ),
-                                    //   ),
-                                    // );
-                                  },
-                                  child: Card(
-                                    child: Container(
-                                      height: size.height * 0.40,
-                                      width: size.width * 0.9,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 10),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.greenAccent,
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: Row(
                                         children: [
-                                          Container(
-                                            height: size.height * 0.25,
-                                            width: size.width * 0.9,
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                  image: NetworkImage(
-                                                    carimg1,
-                                                  ),
-                                                  fit: BoxFit.cover),
-                                              borderRadius: BorderRadius.only(
-                                                  topRight: Radius.circular(12),
-                                                  topLeft: Radius.circular(12)),
-                                            ),
-                                            child: Stack(
-                                              alignment: AlignmentDirectional
-                                                  .bottomEnd,
-                                              children: [
-                                                IconButton(
-                                                  onPressed: () {},
-                                                  icon: Icon(Icons
-                                                      .favorite_outline_sharp),
-                                                ),
-                                              ],
-                                            ),
+                                          Icon(
+                                            Icons.credit_card_outlined,
+                                            size: size.width * 0.07,
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 8.0),
-                                            child: Text(
-                                              brandName + ' ' + modelName,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: size.width * 0.05),
-                                            ),
+                                          SizedBox(
+                                            width: 5,
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 8.0),
-                                            child: Text(
-                                              transName +
-                                                  ' '
-                                                      '*' +
-                                                  ' ' +
-                                                  fuelName +
-                                                  ' '
-                                                      '*' +
-                                                  ' ' +
-                                                  seatName,
-                                              style: TextStyle(
-                                                  fontSize: size.width * 0.025,
-                                                  color: Colors.red),
-                                            ),
+                                          Text(
+                                            "FastTag",
+                                            style: TextStyle(
+                                                fontSize: size.width * 0.035,
+                                                fontWeight: FontWeight.bold),
                                           ),
-                                          Divider(),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 10),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.greenAccent,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10)),
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            5.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(
-                                                          Icons
-                                                              .credit_card_outlined,
-                                                          size:
-                                                              size.width * 0.07,
-                                                        ),
-                                                        SizedBox(
-                                                          width: 5,
-                                                        ),
-                                                        Text(
-                                                          "FastTag",
-                                                          style: TextStyle(
-                                                              fontSize:
-                                                                  size.width *
-                                                                      0.035,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 10),
-                                                child: Text(
-                                                  '\$' + 520.toString() + '/Hr',
-                                                  style: TextStyle(
-                                                      fontSize:
-                                                          size.width * 0.045,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              )
-                                            ],
-                                          )
                                         ],
                                       ),
                                     ),
                                   ),
                                 ),
-                                SizedBox(
-                                  height: 15,
-                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 10),
+                                  child: Text(
+                                    '\$' + amt.toString() + '/Hr',
+                                    style: TextStyle(
+                                        fontSize: size.width * 0.045,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                )
                               ],
-                            ),
-                          );
-                        } else {
-                          return const Center(
-                            child: Text('Invalid data format'),
-                          );
-                        }
-                      },
+                            )
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                ],
               ),
-            ]),
-          ),
-          Positioned(
-              bottom: 40, // Adjust the bottom offset as needed
-              right: 16, // Adjust the right offset as needed
-              child: IconButton.filled(
-                color: Colors.black,
-                style: IconButton.styleFrom(backgroundColor: Colors.black),
-                iconSize: 35,
-                icon: Icon(Icons.filter_list_alt),
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Filter()));
-                },
-              ))
-        ]));
+            );
+          }),
+    );
   }
+}
+
+String formatTime(TimeOfDay timeOfDay) {
+  final format = DateFormat.jm();
+  final time = DateTime(0, 1, 1, timeOfDay.hour, timeOfDay.minute);
+  return format.format(time);
 }

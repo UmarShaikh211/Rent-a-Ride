@@ -20,7 +20,7 @@ import 'cart_model.dart';
 import 'date.dart';
 import 'home.dart';
 
-class Car_detail extends StatefulWidget {
+class SearchCar_detail extends StatefulWidget {
   final String carn;
   final int id;
   final List<dynamic> sharedCars; // Add this parameter
@@ -31,7 +31,7 @@ class Car_detail extends StatefulWidget {
   final String stime;
   final String etime;
 
-  const Car_detail({
+  const SearchCar_detail({
     Key? key,
     required this.carn,
     required this.id,
@@ -45,10 +45,10 @@ class Car_detail extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<Car_detail> createState() => _Car_detailState();
+  State<SearchCar_detail> createState() => _SearchCar_detailState();
 }
 
-class _Car_detailState extends State<Car_detail> {
+class _SearchCar_detailState extends State<SearchCar_detail> {
   bool isChecked = false;
   bool isExpanded = false;
   String carYear = "Year not available"; // Initialize with a default value
@@ -299,8 +299,9 @@ class _Car_detailState extends State<Car_detail> {
                             borderRadius: BorderRadius.circular(
                                 20), // Rounded corners for child
                             child: Image.network(
-                              imageUrls[
-                                  selectedImageIndex], // Display the selected image
+                              '$globalapiUrl' +
+                                  imageUrls[
+                                      selectedImageIndex], // Display the selected image
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -348,7 +349,7 @@ class _Car_detailState extends State<Car_detail> {
                                     borderRadius: BorderRadius.circular(
                                         10), // Rounded corners for child
                                     child: Image.network(
-                                      imageUrl,
+                                      '$globalapiUrl' + imageUrl,
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -564,7 +565,8 @@ class _Car_detailState extends State<Car_detail> {
                                     child: Row(
                                       children: [
                                         CircleAvatar(
-                                          backgroundImage: NetworkImage(himg),
+                                          backgroundImage: NetworkImage(
+                                              '$globalapiUrl' + himg),
                                         ),
                                         SizedBox(
                                           width: size.width * 0.1,

@@ -13,7 +13,7 @@ class _CarVariantSheetState extends State<CarVariantSheet> {
   TextEditingController _readOnlyController = TextEditingController();
   TextEditingController _textInputController = TextEditingController();
 
-  Map<String, List<String>> carVariant = {
+  Map<String, List<String>> carModel = {
     'Ferrari': [
       'assets/tesla.png',
     ],
@@ -50,7 +50,7 @@ class _CarVariantSheetState extends State<CarVariantSheet> {
                 SizedBox(height: 16.0),
                 ListView(
                   shrinkWrap: true,
-                  children: carVariant.entries
+                  children: carModel.entries
                       .map(
                         (entry) => GestureDetector(
                           onTap: () => _selectCarVariant(entry.key),

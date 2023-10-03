@@ -200,27 +200,27 @@ class Reviewcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Card(
-      child: Container(
-        height: size.height * 0.14,
-        width: size.width * 0.6,
-        child: Padding(
-          padding:
-              const EdgeInsets.only(top: 12, left: 15, bottom: 8, right: 10),
-          child: Column(
-            children: [
-              Text(Review, style: TextStyle(fontSize: size.width * 0.0265)),
-              Padding(
-                padding: const EdgeInsets.only(left: 48.0),
-                child: Text(
-                  Name,
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: size.width * 0.030),
-                ),
-              ),
-            ],
-          ),
+    return Container(
+      height: size.height * 0.14,
+      width: size.width * 0.6,
+      decoration: BoxDecoration(
+          border: Border.all(color: Colors.deepPurple),
+          borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        child: Column(
+          children: [
+            Text(Review + '\n' + '~' + Name,
+                style: TextStyle(fontSize: size.width * 0.035)),
+            // Padding(
+            //   padding: const EdgeInsets.only(left: 48.0),
+            //   child: Text(
+            //     '~' + Name,
+            //     style: TextStyle(
+            //         fontWeight: FontWeight.bold, fontSize: size.width * 0.04),
+            //   ),
+            // ),
+          ],
         ),
       ),
     );
@@ -238,9 +238,11 @@ class car_widget extends StatelessWidget {
     return Column(
       children: [
         CircleAvatar(
-          minRadius: 33,
-          backgroundImage: AssetImage(
+          radius: 34,
+          backgroundColor: Colors.transparent,
+          child: Image.network(
             image,
+            fit: BoxFit.contain,
           ),
         ),
         SizedBox(height: size.height * 0.02),
@@ -449,13 +451,26 @@ List<String> generateYearsList() {
 }
 
 List<String> cities = [
-  'New York',
-  'Los Angeles',
-  'Chicago',
-  'San Francisco',
-  'Houston',
-  'Miami',
-  'Seattle',
+  'New Delhi',
+  'Mumbai',
+  'Bangalore',
+  'Chennai',
+  'Kolkata',
+  'Hyderabad',
+  'Pune',
+  'Ahmedabad',
+  'Jaipur',
+  'Lucknow',
+  'Surat',
+  'Kanpur',
+  'Nagpur',
+  'Indore',
+  'Thane',
+  'Bhopal',
+  'Visakhapatnam',
+  'Pimpri-Chinchwad',
+  'Patna',
+  'Vadodara',
 ];
 
 class FuelBut extends StatelessWidget {

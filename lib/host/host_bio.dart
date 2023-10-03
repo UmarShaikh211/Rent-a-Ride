@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:provider/provider.dart';
+import 'package:rentcartest/main.dart';
 
+import '../user/global.dart';
 import '../user/some.dart';
 import 'package:http/http.dart' as http;
+import 'package:rentcartest/user/some.dart' as someApi;
 
 class HostBio extends StatefulWidget {
-  final Map<String, String?>
-      arguments; // Ensure the type here is Map<String, String>
-
-  HostBio({super.key, required this.arguments});
+  const HostBio({Key? key}) : super(key: key);
 
   @override
   State<HostBio> createState() => _HostBioState();
@@ -21,8 +22,9 @@ class _HostBioState extends State<HostBio> {
   TextEditingController _phone = TextEditingController();
   TextEditingController gphone = TextEditingController();
   TextEditingController himage = TextEditingController();
-  late String userId;
-  late String carId;
+  List<Map<String, dynamic>> userCars = [];
+  String? selectedCarId = '';
+  String? userId;
   XFile? _pickedImage; // Declare _pickedImage here as an instance variable
 
   @override
@@ -34,13 +36,62 @@ class _HostBioState extends State<HostBio> {
       "He is also an avid traveler and enjoys hiking in the nearby mountains. John's friendly and approachable nature makes him a great team player, and he values collaboration in his professional and personal life. ";
 
   void initState() {
-    userId = widget.arguments['userId']!;
-    carId = widget.arguments['carId']!;
+    final userProvider = Provider.of<UserDataProvider>(context, listen: false);
+    userId = userProvider.userId;
+
+    if (userId != null) {
+      fetchUserCars(userId!);
+    }
     _name = TextEditingController(text: 'Umar Shaikh');
     _email = TextEditingController(text: "xyz@gmail.com");
 
     _phone = TextEditingController(text: "+91 9833427514");
     super.initState();
+  }
+
+  Future<void> fetchUserCars(String userId) async {
+    try {
+      print("Fetching user's car objects...");
+
+      if (userId != null) {
+        print("User ID: $userId");
+
+        userCars = await someApi.ApiService.getUserCars(userId);
+
+        print("User's car objects fetched: $userCars");
+
+        if (userCars.isNotEmpty) {
+          setState(() {
+            selectedCarId = userCars[0]['id'].toString();
+          });
+        }
+      } else {
+        print("User ID is null");
+      }
+    } catch (e) {
+      print("Error fetching user's car objects: $e");
+    }
+  }
+
+  String getCarNameById(String carId) {
+    final car = userCars.firstWhere(
+      (car) => car['id'].toString() == carId,
+      orElse: () => {},
+    );
+
+    if (car != null) {
+      final addedCars = car['added_cars'] as List<dynamic>;
+      if (addedCars.isNotEmpty) {
+        final carBrand = addedCars[0]['CarBrand'];
+        final carModel = addedCars[0]['CarModel'];
+
+        if (carBrand != null && carModel != null) {
+          return '$carBrand $carModel';
+        }
+      }
+    }
+
+    return 'Unknown Car';
   }
 
   Future<void> _pickImage() async {
@@ -77,7 +128,7 @@ class _HostBioState extends State<HostBio> {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://172.20.10.3:8000/hostbios/'),
+        Uri.parse('$globalapiUrl/hostbios/'),
       );
 
       request.fields.addAll({
@@ -120,7 +171,7 @@ class _HostBioState extends State<HostBio> {
       print('Host Image: $himg');
       print('Host Bio: $hbio');
 
-      await addhostbio(carId, guestphone, himg, hbio);
+      await addhostbio(selectedCarId!, guestphone, himg, hbio);
 
       print('Bio saved successfully'); // Print success message
 
@@ -142,6 +193,44 @@ class _HostBioState extends State<HostBio> {
           Expanded(
             child: ListView(
               children: [
+                SizedBox(
+                  height: 20,
+                ),
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: customInputDecorationTheme(),
+                  ),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Container(
+                        width: 320,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: DropdownButtonFormField<String>(
+                          value: selectedCarId,
+                          onChanged: (newValue) {
+                            setState(() {
+                              selectedCarId = newValue;
+                              print("My problem" + selectedCarId!);
+                            });
+                          },
+                          items: userCars.map((car) {
+                            final carId = car['id'].toString();
+                            final carName = getCarNameById(carId);
+                            return DropdownMenuItem<String>(
+                                value: carId, child: Text('$carName'));
+                          }).toList(),
+                          decoration: InputDecoration(
+                            labelText: 'Select a car',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 SizedBox(
                   height: 20,
                 ),
@@ -310,10 +399,10 @@ class _HostBioState extends State<HostBio> {
 
 InputDecorationTheme customInputDecorationTheme() {
   OutlineInputBorder outlineInputBorder = OutlineInputBorder(
-    borderRadius: BorderRadius.zero, // Customize the border radius as needed
+    // Customize the border radius as needed
     borderSide: BorderSide(
-        color: Colors.blueAccent), // Customize the border color as needed
-    gapPadding: 0,
+        color: Colors.deepPurple), // Customize the border color as needed
+    gapPadding: 5,
   );
   return InputDecorationTheme(
     floatingLabelBehavior:

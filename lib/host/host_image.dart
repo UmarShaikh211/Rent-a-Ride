@@ -3,28 +3,82 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:rentcartest/main.dart';
+import 'package:rentcartest/user/some.dart' as someApi;
+
+import '../user/global.dart';
 
 class Hostimg extends StatefulWidget {
-  final Map<String, String?> arguments;
-  Hostimg({super.key, required this.arguments});
+  const Hostimg({Key? key}) : super(key: key);
 
   @override
   State<Hostimg> createState() => _HostimgState();
 }
 
 class _HostimgState extends State<Hostimg> {
-  late String userId;
-  late String carId;
   List<File> selectedImages = [];
-
+  List<XFile> cameraImages = [];
+  List<Map<String, dynamic>> userCars = [];
+  String? selectedCarId = " ";
+  String? userId;
+  // //static const String apiUrl = 'http://172.20.10.3:8000/'; //Umar
+  // static const String apiUrl = 'http://192.168.0.120:8000/';
   @override
   void initState() {
     super.initState();
-    userId = widget.arguments['userId']!;
-    carId = widget.arguments['carId']!;
+    final userProvider = Provider.of<UserDataProvider>(context, listen: false);
+    userId = userProvider.userId;
+
+    if (userId != null) {
+      fetchUserCars(userId!);
+    }
   }
 
-  List<XFile> cameraImages = [];
+  Future<void> fetchUserCars(String userId) async {
+    try {
+      print("Fetching user's car objects...");
+
+      if (userId != null) {
+        print("User ID: $userId");
+
+        userCars = await someApi.ApiService.getUserCars(userId);
+
+        print("User's car objects fetched: $userCars");
+
+        if (userCars.isNotEmpty) {
+          setState(() {
+            selectedCarId = userCars[0]['id'].toString();
+          });
+        }
+      } else {
+        print("User ID is null");
+      }
+    } catch (e) {
+      print("Error fetching user's car objects: $e");
+    }
+  }
+
+  String getCarNameById(String carId) {
+    final car = userCars.firstWhere(
+      (car) => car['id'].toString() == carId,
+      orElse: () => {},
+    );
+
+    if (car != null) {
+      final addedCars = car['added_cars'] as List<dynamic>;
+      if (addedCars.isNotEmpty) {
+        final carBrand = addedCars[0]['CarBrand'];
+        final carModel = addedCars[0]['CarModel'];
+
+        if (carBrand != null && carModel != null) {
+          return '$carBrand $carModel';
+        }
+      }
+    }
+
+    return 'Unknown Car';
+  }
 
   /// Get from camera
   _getFromCamera() async {
@@ -92,7 +146,7 @@ class _HostimgState extends State<Hostimg> {
                       print('Selected Images Count: ${selectedImages.length}');
 
                       // Upload images to Django API and associate with carId
-                      await uploadImages(selectedImages, carId);
+                      await uploadImages(selectedImages, selectedCarId!);
                       selectedImages.clear();
                       cameraImages.clear();
                     } else {
@@ -132,7 +186,7 @@ class _HostimgState extends State<Hostimg> {
   Future<void> uploadImages(List<File> images, String carId) async {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://172.20.10.3:8000/carimages/'),
+      Uri.parse('$globalapiUrl/carimages/'),
     );
 
     for (int i = 0; i < images.length; i++) {
@@ -164,118 +218,274 @@ class _HostimgState extends State<Hostimg> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Add Images"),
+    return Theme(
+      data: Theme.of(context).copyWith(
+        inputDecorationTheme: customInputDecorationTheme(),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "4 Pro Tips:",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.black),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Add Images"),
+          backgroundColor: Colors.teal,
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListView(
+                children: [
+                  SizedBox(
+                    height: 20,
                   ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Center(
-                  child: Container(
-                    height: 260,
-                    width: 320,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.blueAccent),
-                    child: ListView(children: [
-                      ListTile(
-                        horizontalTitleGap: 0,
-                        leading: Icon(Icons.brightness_high_outlined,
-                            color: Colors.white),
-                        title: Text(
-                          "Shoot during Daytime",
-                          style: TextStyle(fontSize: 14, color: Colors.white),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Container(
+                        width: 320,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        subtitle: Text(
-                          "Daylight is Great for Pictures ",
-                          style: TextStyle(fontSize: 10, color: Colors.white),
-                        ),
-                      ),
-                      ListTile(
-                        horizontalTitleGap: 0,
-                        leading: Icon(Icons.camera_enhance_sharp,
-                            color: Colors.white),
-                        title: Text(
-                          "Click a clear Picture",
-                          style: TextStyle(fontSize: 14, color: Colors.white),
-                        ),
-                        subtitle: Text(
-                          "Avoid hazy/blur images of your Car",
-                          style: TextStyle(fontSize: 10, color: Colors.white),
+                        child: DropdownButtonFormField<String>(
+                          value: selectedCarId,
+                          onChanged: (newValue) {
+                            setState(() {
+                              selectedCarId = newValue;
+                              print("My problem" + selectedCarId!);
+                            });
+                          },
+                          items: userCars.map((car) {
+                            final carId = car['id'].toString();
+                            final carName = getCarNameById(carId);
+                            return DropdownMenuItem<String>(
+                              value: carId,
+                              child: Text('$carName'),
+                            );
+                          }).toList(),
+                          decoration: InputDecoration(
+                            labelText: 'Select a car',
+                            border: OutlineInputBorder(),
+                          ),
                         ),
                       ),
-                      ListTile(
-                        horizontalTitleGap: 0,
-                        leading: Icon(Icons.camera_enhance_sharp,
-                            color: Colors.white),
-                        title: Text(
-                          "Shoot all photos in LandScape mode",
-                          style: TextStyle(fontSize: 14, color: Colors.white),
-                        ),
-                        subtitle: Text(
-                          "Guests see photos in LandScape mode only",
-                          style: TextStyle(fontSize: 10, color: Colors.white),
-                        ),
-                      ),
-                      ListTile(
-                        horizontalTitleGap: 0,
-                        leading: Icon(Icons.favorite, color: Colors.white),
-                        title: Text(
-                          "Keep backgorund & foreground clean",
-                          style: TextStyle(fontSize: 14, color: Colors.white),
-                        ),
-                        subtitle: Text(
-                          "Make sure no objects come in front of the car",
-                          style: TextStyle(fontSize: 10, color: Colors.white),
-                        ),
-                      ),
-                    ]),
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Padding(
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
                     padding: const EdgeInsets.only(left: 10),
+                    child: Text(
+                      "4 Pro Tips:",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.black),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Center(
+                      child: Container(
+                        height: 300,
+                        width: 320,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.blueAccent),
+                        child: ListView(
+                            physics: NeverScrollableScrollPhysics(),
+                            children: [
+                              ListTile(
+                                horizontalTitleGap: 0,
+                                leading: Icon(Icons.brightness_high_outlined,
+                                    color: Colors.white),
+                                title: Text(
+                                  "Shoot during Daytime",
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  "Daylight is Great for Pictures ",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ),
+                              ListTile(
+                                horizontalTitleGap: 0,
+                                leading: Icon(Icons.camera_enhance_sharp,
+                                    color: Colors.white),
+                                title: Text(
+                                  "Click a clear Picture",
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  "Avoid hazy/blur images of your Car",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ),
+                              ListTile(
+                                horizontalTitleGap: 0,
+                                leading: Icon(Icons.camera_enhance_sharp,
+                                    color: Colors.white),
+                                title: Text(
+                                  "Shoot all photos in LandScape mode",
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  "Guests see photos in LandScape mode only",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ),
+                              ListTile(
+                                horizontalTitleGap: 0,
+                                leading:
+                                    Icon(Icons.favorite, color: Colors.white),
+                                title: Text(
+                                  "Keep backgorund & foreground clean",
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  "Make sure no objects come in front of the car",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ),
+                            ]),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(7),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.teal,
+                                  borderRadius: BorderRadius.circular(6)),
+                              height: 110,
+                              width: 105,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Text(
+                                  "Make Your Car Stand Out!",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: "Roboto",
+                                      color: Colors.white,
+                                      fontSize: 18),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(7),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.pink,
+                                  borderRadius: BorderRadius.circular(6)),
+                              height: 110,
+                              width: 105,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Text(
+                                  "Great Images Get 2x More Views",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: "Roboto",
+                                      color: Colors.white,
+                                      fontSize: 18),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(7),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.deepPurple,
+                                  borderRadius: BorderRadius.circular(6)),
+                              height: 110,
+                              width: 105,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Text(
+                                  "Potential Earnings Uplift By 1.5x ",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: "Roboto",
+                                      color: Colors.white,
+                                      fontSize: 18),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(7),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.deepOrange,
+                                  borderRadius: BorderRadius.circular(6)),
+                              height: 110,
+                              width: 105,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Text(
+                                  "Show Off Your Photography Skills",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: "Roboto",
+                                      color: Colors.white,
+                                      fontSize: 18),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  //Referece Images
+
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
                         Padding(
                           padding: const EdgeInsets.all(7),
                           child: Container(
                             decoration: BoxDecoration(
-                                color: Colors.teal,
+                                color: Colors.pink,
                                 borderRadius: BorderRadius.circular(6)),
-                            height: 100,
-                            width: 100,
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Text(
-                                "Make Your Car Stand Out!",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: "Roboto",
-                                    color: Colors.white,
-                                    fontSize: 18),
-                              ),
+                            height: 110,
+                            width: 130,
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 90,
+                                  color: Colors.blue,
+                                ),
+                                Text(
+                                  "Front Diagonal Side",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -285,18 +495,20 @@ class _HostimgState extends State<Hostimg> {
                             decoration: BoxDecoration(
                                 color: Colors.pink,
                                 borderRadius: BorderRadius.circular(6)),
-                            height: 100,
-                            width: 100,
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Text(
-                                "Great Images Get 2x More Views",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: "Roboto",
-                                    color: Colors.white,
-                                    fontSize: 18),
-                              ),
+                            height: 110,
+                            width: 130,
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 90,
+                                  color: Colors.blue,
+                                ),
+                                Text(
+                                  "Front Diagonal Side",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -304,20 +516,22 @@ class _HostimgState extends State<Hostimg> {
                           padding: const EdgeInsets.all(7),
                           child: Container(
                             decoration: BoxDecoration(
-                                color: Colors.deepPurple,
+                                color: Colors.pink,
                                 borderRadius: BorderRadius.circular(6)),
-                            height: 100,
-                            width: 100,
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Text(
-                                "Potential Earnings Uplift By 1.5x ",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: "Roboto",
-                                    color: Colors.white,
-                                    fontSize: 18),
-                              ),
+                            height: 110,
+                            width: 130,
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 90,
+                                  color: Colors.blue,
+                                ),
+                                Text(
+                                  "Front Diagonal Side",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -325,194 +539,114 @@ class _HostimgState extends State<Hostimg> {
                           padding: const EdgeInsets.all(7),
                           child: Container(
                             decoration: BoxDecoration(
-                                color: Colors.deepOrange,
+                                color: Colors.pink,
                                 borderRadius: BorderRadius.circular(6)),
-                            height: 100,
-                            width: 100,
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Text(
-                                "Show Off Your Photography Skills",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: "Roboto",
-                                    color: Colors.white,
-                                    fontSize: 18),
-                              ),
+                            height: 110,
+                            width: 130,
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 90,
+                                  color: Colors.blue,
+                                ),
+                                Text(
+                                  "Front Diagonal Side",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ],
                             ),
                           ),
+                        ),
+                        SizedBox(
+                          height: 30,
                         ),
                       ],
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                //Referece Images
-
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Text(
+                      "How to click pictures",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.black),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Center(
+                      child: Container(
+                        height: 250,
+                        width: 330,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.orange),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Container(
+              height: 80,
+              width: 400,
+              child: BottomAppBar(
+                child: Container(
+                  child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(7),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: Colors.pink,
-                              borderRadius: BorderRadius.circular(6)),
-                          height: 110,
-                          width: 130,
-                          child: Column(
-                            children: [
-                              Container(
-                                height: 90,
-                                color: Colors.blue,
-                              ),
-                              Text(
-                                "Front Diagonal Side",
-                                style: TextStyle(
-                                    fontSize: 10, color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(7),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: Colors.pink,
-                              borderRadius: BorderRadius.circular(6)),
-                          height: 110,
-                          width: 130,
-                          child: Column(
-                            children: [
-                              Container(
-                                height: 90,
-                                color: Colors.blue,
-                              ),
-                              Text(
-                                "Front Diagonal Side",
-                                style: TextStyle(
-                                    fontSize: 10, color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(7),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: Colors.pink,
-                              borderRadius: BorderRadius.circular(6)),
-                          height: 110,
-                          width: 130,
-                          child: Column(
-                            children: [
-                              Container(
-                                height: 90,
-                                color: Colors.blue,
-                              ),
-                              Text(
-                                "Front Diagonal Side",
-                                style: TextStyle(
-                                    fontSize: 10, color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(7),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: Colors.pink,
-                              borderRadius: BorderRadius.circular(6)),
-                          height: 110,
-                          width: 130,
-                          child: Column(
-                            children: [
-                              Container(
-                                height: 90,
-                                color: Colors.blue,
-                              ),
-                              Text(
-                                "Front Diagonal Side",
-                                style: TextStyle(
-                                    fontSize: 10, color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                       SizedBox(
-                        height: 30,
+                        height: 10,
+                      ),
+                      Card(
+                        child: Container(
+                            width: 320,
+                            height: 45,
+                            child: ElevatedButton(
+                              style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStatePropertyAll<Color>(
+                                          Colors.green)),
+                              onPressed: () {
+                                _openImageSheet();
+                              },
+                              child: Text("Add Photos"),
+                            )),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(
-                  height: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "How to click pictures",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.black),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Center(
-                  child: Container(
-                    height: 250,
-                    width: 330,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.orange),
-                  ),
-                )
-              ],
-            ),
-          ),
-          Container(
-            height: 80,
-            width: 400,
-            child: BottomAppBar(
-              child: Container(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Card(
-                      child: Container(
-                          width: 320,
-                          height: 45,
-                          child: ElevatedButton(
-                            style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStatePropertyAll<Color>(
-                                        Colors.green)),
-                            onPressed: () {
-                              _openImageSheet();
-                            },
-                            child: Text("Add Photos"),
-                          )),
-                    ),
-                  ],
-                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+}
+
+InputDecorationTheme customInputDecorationTheme() {
+  OutlineInputBorder outlineInputBorder = OutlineInputBorder(
+    // Customize the border radius as needed
+    borderSide:
+        BorderSide(color: Colors.teal), // Customize the border color as needed
+    gapPadding: 5,
+  );
+  return InputDecorationTheme(
+    floatingLabelBehavior:
+        FloatingLabelBehavior.auto, // Customize the label behavior if needed
+    contentPadding: EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 10), // Customize the content padding if needed
+    enabledBorder: outlineInputBorder,
+    focusedBorder: outlineInputBorder,
+    border: outlineInputBorder,
+  );
 }

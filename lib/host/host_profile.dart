@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rentcartest/host/profile_pages/addbank.dart';
 import 'package:rentcartest/host/profile_pages/carsetting.dart';
 import 'package:rentcartest/host/profile_pages/guestwelcome.dart';
@@ -7,7 +10,10 @@ import 'package:rentcartest/host/profile_pages/pricing.dart';
 import 'package:rentcartest/host/profile_pages/program.dart';
 import 'package:rentcartest/host/carbrandsheet.dart';
 import 'package:rentcartest/host/profile_pages/refer.dart';
-
+import 'package:rentcartest/host/profile_pages/savebank.dart';
+import 'package:rentcartest/main.dart';
+import 'package:http/http.dart' as http;
+import '../user/global.dart';
 import 'host_drawer.dart';
 
 class HostPro extends StatefulWidget {
@@ -18,6 +24,45 @@ class HostPro extends StatefulWidget {
 }
 
 class _HostProState extends State<HostPro> {
+  String? userId;
+  String uname = 'Unknown';
+  String uemail = 'Unknown';
+  String uphone = 'Unknown';
+
+  @override
+  void initState() {
+    super.initState();
+    final userProvider = Provider.of<UserDataProvider>(context, listen: false);
+    userId = userProvider.userId;
+    fetchUserDetails(userId!);
+  }
+
+  Future<void> fetchUserDetails(String userId) async {
+    try {
+      final response =
+          await http.get(Uri.parse('$globalapiUrl/users/$userId/'));
+      if (response.statusCode == 200) {
+        final carData = json.decode(response.body);
+        final a = carData['name'];
+        final i = carData['email'];
+        final p = carData['phone'];
+
+        setState(() {
+          uname = a ?? 'Unknown'; // Set the carSeats variable
+          uemail = i ?? 'Unknown'; // Set the carSeats variable
+          uphone = p ?? 'Unknown'; // Set the carSeats variable
+        });
+      } else {
+        // Handle error response (e.g., show an error message)
+        print('Error: ${response.statusCode}');
+        print('Response: ${response.body}');
+      }
+    } catch (e) {
+      // Handle network or other errors
+      print('Error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,21 +111,21 @@ class _HostProState extends State<HostPro> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              "Umar Shaikh",
+                              uname,
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.cyanAccent,
                                   fontSize: 17),
                             ),
                             Text(
-                              "xyz@gmail.com",
+                              uemail,
                               style: TextStyle(color: Colors.white),
                             ),
                             SizedBox(
                               height: 5,
                             ),
                             Text(
-                              "9833427514",
+                              uphone,
                               style: TextStyle(color: Colors.white),
                             )
                           ],
@@ -127,7 +172,7 @@ class _HostProState extends State<HostPro> {
                 },
                 child: ListTile(
                   leading: Icon(Icons.credit_card_sharp),
-                  title: Text("View Bank Details"),
+                  title: Text("Add Bank Details"),
                   trailing: Icon(Icons.arrow_forward_ios_outlined),
                 ),
               ),
@@ -135,7 +180,19 @@ class _HostProState extends State<HostPro> {
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Refer()));
+                      MaterialPageRoute(builder: (context) => SaveBanlk()));
+                },
+                child: ListTile(
+                  leading: Icon(Icons.credit_card_sharp),
+                  title: Text("View Bank Details"),
+                  trailing: Icon(Icons.arrow_forward_ios_outlined),
+                ),
+              ),
+              Divider(),
+              GestureDetector(
+                onTap: () {
+                  // Navigator.push(context,
+                  //     MaterialPageRoute(builder: (context) => Refer()));
                 },
                 child: ListTile(
                   leading: Icon(Icons.satellite_alt_sharp),
@@ -146,8 +203,12 @@ class _HostProState extends State<HostPro> {
               Divider(),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Pricing()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Pricing(
+                                arguments: {},
+                              )));
                 },
                 child: ListTile(
                   leading: Icon(Icons.currency_rupee_outlined),
@@ -168,18 +229,18 @@ class _HostProState extends State<HostPro> {
                 ),
               ),
               Divider(),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Offers()));
-                },
-                child: ListTile(
-                  leading: Icon(Icons.discount_outlined),
-                  title: Text("Host Offers"),
-                  trailing: Icon(Icons.arrow_forward_ios_outlined),
-                ),
-              ),
-              Divider(),
+              // GestureDetector(
+              //   onTap: () {
+              //     Navigator.push(context,
+              //         MaterialPageRoute(builder: (context) => Offers()));
+              //   },
+              //   child: ListTile(
+              //     leading: Icon(Icons.discount_outlined),
+              //     title: Text("Host Offers"),
+              //     trailing: Icon(Icons.arrow_forward_ios_outlined),
+              //   ),
+              // ),
+              // Divider(),
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,

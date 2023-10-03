@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import '../main.dart';
 import '../user/global.dart';
 import 'host_drawer.dart';
 import 'package:rentcartest/user/some.dart' as someApi;
@@ -19,8 +20,8 @@ class _HostFinState extends State<HostFin> {
   List<Map<String, dynamic>> userCars = [];
   String? selectedCarId = " ";
   String? userId;
-  //static const String apiUrl = 'http://172.20.10.3:8000/'; //Umar
-  static const String apiUrl = 'http://192.168.0.120:8000/';
+  // //static const String apiUrl = 'http://172.20.10.3:8000/'; //Umar
+  // static const String apiUrl = 'http://192.168.0.120:8000/';
   @override
   void initState() {
     super.initState();
@@ -56,89 +57,120 @@ class _HostFinState extends State<HostFin> {
     }
   }
 
+  String getCarNameById(String carId) {
+    final car = userCars.firstWhere(
+      (car) => car['id'].toString() == carId,
+      orElse: () => {},
+    );
+
+    if (car != null) {
+      final addedCars = car['added_cars'] as List<dynamic>;
+      if (addedCars.isNotEmpty) {
+        final carBrand = addedCars[0]['CarBrand'];
+        final carModel = addedCars[0]['CarModel'];
+
+        if (carBrand != null && carModel != null) {
+          return '$carBrand $carModel';
+        }
+      }
+    }
+
+    return 'Unknown Car';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: HostDraw(),
-      appBar: AppBar(
-        backgroundColor: Colors.teal,
-        title: Text("Performance DashBoard"),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(
-              Icons.menu,
-              color: Colors.white,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        inputDecorationTheme: customInputDecorationTheme(),
+      ),
+      child: Scaffold(
+        drawer: HostDraw(),
+        appBar: AppBar(
+          backgroundColor: Color.fromRGBO(254, 205, 59, 1.0),
+          foregroundColor: Colors.black,
+          title: Text("Earnings"),
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: Icon(
+                Icons.menu,
+                color: Colors.black,
+              ),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
             ),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
           ),
         ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 20,
-            ),
-            Center(
-              child: Container(
-                width: 320,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: DropdownButtonFormField<String>(
-                  value: selectedCarId,
-                  onChanged: (newValue) {
-                    setState(() {
-                      selectedCarId = newValue;
-                      print("My problem" + selectedCarId!);
-                    });
-                  },
-                  items: userCars.map((car) {
-                    final carId = car['id'].toString();
-                    return DropdownMenuItem<String>(
-                      value: carId,
-                      child: Text('Car ID: $carId'),
-                    );
-                  }).toList(),
-                  decoration: InputDecoration(
-                    labelText: 'Select a car',
-                    border: OutlineInputBorder(),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 20,
+              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    width: 320,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: DropdownButtonFormField<String>(
+                      value: selectedCarId,
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedCarId = newValue;
+                          print("My problem" + selectedCarId!);
+                        });
+                      },
+                      items: userCars.map((car) {
+                        final carId = car['id'].toString();
+                        final carName = getCarNameById(carId);
+                        return DropdownMenuItem<String>(
+                          value: carId,
+                          child: Text('$carName'),
+                        );
+                      }).toList(),
+                      decoration: InputDecoration(
+                        labelText: 'Select a car',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Container(
-              height: 200,
-              width: 400,
-              child: Image.asset("assets/bar.png"),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future:
-                  fetchTripsByCarId(selectedCarId!), // Pass selectedCarId here
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData ||
-                    snapshot.data == null ||
-                    snapshot.data!.isEmpty) {
-                  return Center(child: Text('No Income available.'));
-                } else {
-                  return IncomeList(incomes: snapshot.data!);
-                }
-              },
-            ),
-          ],
+              SizedBox(
+                height: 20,
+              ),
+              Container(
+                height: 200,
+                width: 400,
+                child: Image.asset("assets/bar.png"),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              FutureBuilder<List<Map<String, dynamic>>>(
+                future: fetchTripsByCarId(
+                    selectedCarId!), // Pass selectedCarId here
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData ||
+                      snapshot.data == null ||
+                      snapshot.data!.isEmpty) {
+                    return Center(child: Text('No Income available.'));
+                  } else {
+                    return IncomeList(incomes: snapshot.data!);
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -154,7 +186,7 @@ class _HostFinState extends State<HostFin> {
       print('Fetching trips for car ID: $carId'); // For debugging
 
       final response = await http.get(
-        Uri.parse('$apiUrl/income/?car=$carId'),
+        Uri.parse('$globalapiUrl/income/?car=$carId'),
       );
 
       print('API Response: ${response.body}'); // For debugging
@@ -191,6 +223,7 @@ class IncomeList extends StatelessWidget {
       width: 400,
       child: ListView.builder(
         itemCount: incomes.length,
+        physics: NeverScrollableScrollPhysics(),
         itemBuilder: (BuildContext context, int index) {
           final income = incomes[index];
 
@@ -199,13 +232,16 @@ class IncomeList extends StatelessWidget {
             child: Card(
                 elevation: 3,
                 child: Container(
-                  height: 50,
+                  height: 70,
                   width: 400,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        SizedBox(
+                          height: 10,
+                        ),
                         Container(
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
@@ -221,7 +257,7 @@ class IncomeList extends StatelessWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 5,
+                          height: 10,
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -253,4 +289,23 @@ class IncomeList extends StatelessWidget {
       ),
     );
   }
+}
+
+InputDecorationTheme customInputDecorationTheme() {
+  OutlineInputBorder outlineInputBorder = OutlineInputBorder(
+    // Customize the border radius as needed
+    borderSide: BorderSide(
+        color: Colors.deepPurple), // Customize the border color as needed
+    gapPadding: 5,
+  );
+  return InputDecorationTheme(
+    floatingLabelBehavior:
+        FloatingLabelBehavior.auto, // Customize the label behavior if needed
+    contentPadding: EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 10), // Customize the content padding if needed
+    enabledBorder: outlineInputBorder,
+    focusedBorder: outlineInputBorder,
+    border: outlineInputBorder,
+  );
 }

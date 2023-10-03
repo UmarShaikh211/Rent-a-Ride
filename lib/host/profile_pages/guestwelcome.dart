@@ -13,26 +13,23 @@ class _GuestWelcomeState extends State<GuestWelcome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Welcome Message Setup"),
+        title: Text("Welcome Message "),
         backgroundColor: Colors.teal,
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView(
+              physics: NeverScrollableScrollPhysics(),
               children: [
                 SizedBox(
-                  height: 20,
-                ),
-                Text("About Welcome Messages"),
-                SizedBox(
-                  height: 20,
+                  height: 40,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Container(
                     color: Colors.white,
-                    height: 300,
+                    height: 420,
                     width: 350,
                     child: Row(
                       children: [
