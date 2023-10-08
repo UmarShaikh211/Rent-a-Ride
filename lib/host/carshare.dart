@@ -162,55 +162,109 @@ class _ShareCarState extends State<ShareCar> {
   //     print("Error updating isshared: $e");
   //   }
   // }
+  String getCarNameById(String carId) {
+    final car = userCars.firstWhere(
+      (car) => car['id'].toString() == carId,
+      orElse: () => {},
+    );
+
+    if (car != null) {
+      final addedCars = car['added_cars'] as List<dynamic>;
+      if (addedCars.isNotEmpty) {
+        final carBrand = addedCars[0]['CarBrand'];
+        final carModel = addedCars[0]['CarModel'];
+
+        if (carBrand != null && carModel != null) {
+          return '$carBrand $carModel';
+        }
+      }
+    }
+
+    return 'Unknown Car';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Share Car"),
-      ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 20,
+    return Theme(
+        data: Theme.of(context).copyWith(
+          inputDecorationTheme: customInputDecorationTheme(),
+        ),
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.black,
+            title: Text("Share Car"),
           ),
-          Center(
-            child: Container(
-              width: 320,
-              decoration:
-                  BoxDecoration(borderRadius: BorderRadius.circular(20)),
-              child: DropdownButtonFormField<String>(
-                value: selectedCarId,
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedCarId = newValue;
-                  });
-                },
-                items: userCars.map((car) {
-                  final carId = car['id'].toString();
-                  return DropdownMenuItem<String>(
-                    value: carId,
-                    child: Text('Car ID: $carId'),
-                  );
-                }).toList(),
-                decoration: InputDecoration(
-                  labelText: 'Select a car',
-                  border: OutlineInputBorder(),
+          body: Column(
+            children: [
+              SizedBox(
+                height: 30,
+              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  child: Container(
+                    width: 320,
+                    decoration:
+                        BoxDecoration(borderRadius: BorderRadius.circular(20)),
+                    child: DropdownButtonFormField<String>(
+                      value: selectedCarId,
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedCarId = newValue;
+                        });
+                      },
+                      items: userCars.map((car) {
+                        final carId = car['id'].toString();
+                        final carName = getCarNameById(carId);
+
+                        return DropdownMenuItem<String>(
+                          value: carId,
+                          child: Text('$carName'),
+                        );
+                      }).toList(),
+                      decoration: InputDecoration(
+                        labelText: 'Select a car',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  checkAndDisplayAllModelsFilled(int.parse(selectedCarId!));
+                },
+                child: Text("Confirm"),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.black,
+                    side: BorderSide(color: Colors.deepPurple)),
+              )
+            ],
           ),
-          SizedBox(
-            height: 20,
-          ),
-          ElevatedButton(
-            onPressed: () {
-              checkAndDisplayAllModelsFilled(int.parse(selectedCarId!));
-            },
-            child: Text("Confirm"),
-          )
-        ],
-      ),
-    );
+        ));
   }
+}
+
+InputDecorationTheme customInputDecorationTheme() {
+  OutlineInputBorder outlineInputBorder = OutlineInputBorder(
+    // Customize the border radius as needed
+    borderSide: BorderSide(
+        color: Colors.deepPurple), // Customize the border color as needed
+    gapPadding: 5,
+  );
+  return InputDecorationTheme(
+    floatingLabelBehavior:
+        FloatingLabelBehavior.auto, // Customize the label behavior if needed
+    contentPadding: EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 10), // Customize the content padding if needed
+    enabledBorder: outlineInputBorder,
+    focusedBorder: outlineInputBorder,
+    border: outlineInputBorder,
+  );
 }

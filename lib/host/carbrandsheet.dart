@@ -45,6 +45,7 @@ class _CarBrandSheetState extends State<CarBrandSheet> {
   }
 
   void _openBottomSheet() {
+    Size size = MediaQuery.of(context).size;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -56,22 +57,6 @@ class _CarBrandSheetState extends State<CarBrandSheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Card(
-                child: Container(
-                  width: 300,
-                  height: 40,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStatePropertyAll<Color>(Colors.green),
-                    ),
-                    onPressed: () {
-                      _saveText();
-                    },
-                    child: Text("Save"),
-                  ),
-                ),
-              ),
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -116,6 +101,27 @@ class _CarBrandSheetState extends State<CarBrandSheet> {
                   ),
                 ),
               ),
+              Card(
+                child: Container(
+                  width: 300,
+                  height: 40,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        primary: Color.fromRGBO(
+                            254, 205, 59, 1.0), // Set the background color
+                        onPrimary: Colors.black,
+                        side: BorderSide(color: Colors.deepPurple)),
+                    onPressed: () {
+                      _saveText();
+                    },
+                    child: Text("SAVE",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: size.width * 0.06,
+                            fontFamily: 'Times New Roman')),
+                  ),
+                ),
+              ),
             ],
           ),
         );
@@ -142,18 +148,17 @@ class _CarBrandSheetState extends State<CarBrandSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Card(
-            child: Container(
-              height: 50,
-              width: 50,
-              child: TextField(
-                controller: _textbrand,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Car Brand',
-                ),
-                onTap: _openBottomSheet,
+          Container(
+            height: 50,
+            width: 50,
+            child: TextField(
+              controller: _textbrand,
+              readOnly: true,
+              decoration: InputDecoration(
+                labelStyle: TextStyle(color: Colors.black),
+                labelText: 'Car Brand',
               ),
+              onTap: _openBottomSheet,
             ),
           ),
         ],
@@ -174,4 +179,23 @@ class BrandLogo {
       brandimage: json['brandimage'],
     );
   }
+}
+
+InputDecorationTheme customInputDecorationTheme() {
+  OutlineInputBorder outlineInputBorder = OutlineInputBorder(
+    // Customize the border radius as needed
+    borderSide: BorderSide(
+        color: Colors.deepPurple), // Customize the border color as needed
+    gapPadding: 5,
+  );
+  return InputDecorationTheme(
+    floatingLabelBehavior:
+        FloatingLabelBehavior.auto, // Customize the label behavior if needed
+    contentPadding: EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 10), // Customize the content padding if needed
+    enabledBorder: outlineInputBorder,
+    focusedBorder: outlineInputBorder,
+    border: outlineInputBorder,
+  );
 }

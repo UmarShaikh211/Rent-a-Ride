@@ -6,7 +6,8 @@ class HostPolicy extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Host Policies'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.black,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),

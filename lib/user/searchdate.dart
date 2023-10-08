@@ -42,17 +42,34 @@ class _SearchState extends State<Search> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Error'),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
+        return Theme(
+          data: Theme.of(context).copyWith(
+            dialogBackgroundColor: Colors.white,
+            // Customize the background color
+            dialogTheme: DialogTheme(
+              shape: RoundedRectangleBorder(
+                side: BorderSide(color: Colors.deepPurple),
+                borderRadius: BorderRadius.circular(10.0),
+                // Customize the border radius
+              ),
             ),
-          ],
+          ),
+          child: AlertDialog(
+            title: Text('Error'),
+            content: Text(message),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.black,
+                    side: BorderSide(color: Colors.deepPurple)),
+                child: Text("OK"),
+              ),
+            ],
+          ),
         );
       },
     );

@@ -38,18 +38,20 @@ class _SaveBanlkState extends State<SaveBanlk> {
         final p = carData['pan'];
 
         setState(() {
-          an = a ?? 'Unknown'; // Set the carSeats variable
-          ifn = i ?? 'Unknown'; // Set the carSeats variable
-          pn = p ?? 'Unknown'; // Set the carSeats variable
+          an = a ?? 'Unknown';
+          ifn = i ?? 'Unknown';
+          pn = p ?? 'Unknown';
         });
       } else {
         // Handle error response (e.g., show an error message)
         print('Error: ${response.statusCode}');
         print('Response: ${response.body}');
+        // You can set an error message or handle the error in another way here.
       }
     } catch (e) {
       // Handle network or other errors
       print('Error: $e');
+      // You can set an error message or handle the error in another way here.
     }
   }
 

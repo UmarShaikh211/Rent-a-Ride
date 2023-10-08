@@ -28,6 +28,7 @@ class _HostEliState extends State<HostEli> {
   TextEditingController _license = TextEditingController();
   String? selectedBrand;
   TextEditingController _carmodel = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   TextEditingController _textEditingController = TextEditingController();
   String? selectedCity;
@@ -200,426 +201,505 @@ class _HostEliState extends State<HostEli> {
     List<String> yearsList = generateYearsList();
     Size size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(),
-        title: Text("Add Car"),
-        backgroundColor: Colors.blueAccent,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        inputDecorationTheme: customInputDecorationTheme(),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-                Center(
-                  child: Card(
-                    elevation: 5,
-                    child: Container(
-                      height: 280,
-                      child: Column(
+      child: Scaffold(
+        appBar: AppBar(
+          leading: BackButton(),
+          title: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text("Add Car"),
+          ),
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.black,
+        ),
+        body: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ListView(
+                  children: [
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Center(
+                      child: Container(
+                        height: 230,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 15),
+                              child: TextFormField(
+                                readOnly: true,
+                                initialValue: widget.arguments['licenses'],
+                                decoration: InputDecoration(
+                                  labelStyle: TextStyle(color: Colors.black),
+                                  labelText: 'License',
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a valid license';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            CarBrandSheet(
+                              onCarBrandSelected: _onCarBrandSelected,
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 15),
+                              child: TextFormField(
+                                controller: _carmodel,
+                                decoration: InputDecoration(
+                                  labelStyle: TextStyle(color: Colors.black),
+                                  labelText: 'Car Model',
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a car model';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: DropdownButtonFormField(
+                        focusColor: Colors.white,
+                        decoration: InputDecoration(
+                          labelStyle: TextStyle(color: Colors.black),
+                          labelText: 'City',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a city';
+                          }
+                          return null;
+                        },
+                        value: selectedCity,
+                        items: cities.map((city) {
+                          return DropdownMenuItem(
+                            value: city,
+                            child: Text(city),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedCity = value;
+                          });
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: DropdownButtonFormField(
+                        focusColor: Colors.white,
+                        decoration: InputDecoration(
+                          labelStyle: TextStyle(color: Colors.black),
+                          labelText: 'Year of Registration',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a year';
+                          }
+                          return null;
+                        },
+                        value: selectedYear,
+                        items: yearsList.map((year) {
+                          return DropdownMenuItem(
+                            value: year,
+                            child: Text(year),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedYear = value as String?;
+                          });
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Text(
+                        "Fuel Type",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FuelBut(
+                          label: "Petrol",
+                          isSelected: selectedButtonIndex == 0,
+                          onPressed: () {
+                            setState(() {
+                              selectedButtonIndex = 0;
+                            });
+                          },
+                        ),
+                        SizedBox(width: 18),
+                        FuelBut(
+                          label: "Diesel",
+                          isSelected: selectedButtonIndex == 1,
+                          onPressed: () {
+                            setState(() {
+                              selectedButtonIndex = 1;
+                            });
+                          },
+                        ),
+                        SizedBox(width: 18),
+                        FuelBut(
+                          label: "Electric",
+                          isSelected: selectedButtonIndex == 2,
+                          onPressed: () {
+                            setState(() {
+                              selectedButtonIndex = 2;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Text(
+                        "Transmission Type",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              isPressedManual = !isPressedManual;
+                              if (isPressedManual) {
+                                isPressedAutomatic =
+                                    false; // Set other button state to false
+                              }
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: isPressedManual
+                                ? Colors.deepPurple
+                                : Theme.of(context).primaryColor,
+                            backgroundColor: isPressedManual
+                                ? Theme.of(context).primaryColor
+                                : Colors.deepPurple,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                top: 8.0, bottom: 8, left: 18, right: 18),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.home_sharp),
+                                SizedBox(height: 8),
+                                Text("Manual"),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 18),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              isPressedAutomatic = !isPressedAutomatic;
+                              if (isPressedAutomatic) {
+                                isPressedManual =
+                                    false; // Set other button state to false
+                              }
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: isPressedAutomatic
+                                ? Colors.deepPurple
+                                : Theme.of(context).primaryColor,
+                            backgroundColor: isPressedAutomatic
+                                ? Theme.of(context).primaryColor
+                                : Colors.deepPurple,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                top: 8.0, bottom: 8, left: 15, right: 15),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.home_sharp),
+                                SizedBox(height: 8),
+                                Text("Automatic"),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Text(
+                        "Seats",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              isPressed5 = !isPressed5;
+                              if (isPressed5) {
+                                isPressed7 =
+                                    false; // Set other button state to false
+                              }
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: isPressed5
+                                ? Colors.deepPurple
+                                : Theme.of(context).primaryColor,
+                            backgroundColor: isPressed5
+                                ? Theme.of(context).primaryColor
+                                : Colors.deepPurple,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                top: 8.0, bottom: 8, left: 18, right: 18),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.home_sharp),
+                                SizedBox(height: 8),
+                                Text("5 Seats"),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 18),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              isPressed7 = !isPressed7;
+                              if (isPressed7) {
+                                isPressed5 =
+                                    false; // Set other button state to false
+                              }
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: isPressed7
+                                ? Colors.deepPurple
+                                : Theme.of(context).primaryColor,
+                            backgroundColor: isPressed7
+                                ? Theme.of(context).primaryColor
+                                : Colors.deepPurple,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                top: 8.0, bottom: 8, left: 15, right: 15),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.home_sharp),
+                                SizedBox(height: 8),
+                                Text("7 Seater"),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Text(
+                        "Car Km Driven",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Slider(
+                      value: _currentSliderValue,
+                      max: 100000,
+                      divisions: 100,
+                      activeColor: Colors.deepPurpleAccent,
+                      inactiveColor: Theme.of(context).primaryColor,
+                      label: _currentSliderValue.round().toString() + " Km",
+                      onChanged: (double value) {
+                        setState(() {
+                          _currentSliderValue = value;
+                        });
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Text(
+                        "Approx Km Driven",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 18,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: TextFormField(
+                        controller: _carchassis,
+                        decoration: InputDecoration(
+                          labelStyle: TextStyle(color: Colors.black),
+                          labelText: 'Chassis Number',
+                          hintText: 'Enter Chassis Number',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter Car Chassis No';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20),
+                      child: Text(
+                        "You can find the chassis number\n(17 digit number) on your RC Card.",
+                        style: TextStyle(color: Colors.grey, fontSize: 13),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: Row(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: TextFormField(
-                              readOnly: true,
-                              initialValue: widget.arguments['licenses'],
-                              decoration: InputDecoration(
-                                labelText: 'License',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
+                          Checkbox(
+                            checkColor: Colors.white,
+                            value: isChecked,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                isChecked = value ?? false;
+                              });
+                            },
                           ),
                           SizedBox(
-                            height: 15,
+                            width: 5,
                           ),
-                          CarBrandSheet(
-                            onCarBrandSelected: _onCarBrandSelected,
-                          ),
-                          SizedBox(
-                            height: 15,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: TextFormField(
-                              controller: _carmodel,
-                              decoration: InputDecoration(
-                                labelText: 'Car Model',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
+                          Text(
+                            "I accept Terms & Conditions",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: DropdownButtonFormField(
-                    focusColor: Colors.white,
-                    decoration: InputDecoration(
-                      labelText: 'City',
-                    ),
-                    value: selectedCity,
-                    items: cities.map((city) {
-                      return DropdownMenuItem(
-                        value: city,
-                        child: Text(city),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCity = value;
-                      });
-                    },
-                  ),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: DropdownButtonFormField(
-                    focusColor: Colors.white,
-                    decoration: InputDecoration(
-                      labelText: 'Year of Registration',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: selectedYear,
-                    items: yearsList.map((year) {
-                      return DropdownMenuItem(
-                        value: year,
-                        child: Text(year),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedYear = value as String?;
-                      });
-                    },
-                  ),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Text(
-                    "Fuel Type",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FuelBut(
-                      label: "Petrol",
-                      isSelected: selectedButtonIndex == 0,
-                      onPressed: () {
-                        setState(() {
-                          selectedButtonIndex = 0;
-                        });
-                      },
-                    ),
-                    SizedBox(width: 18),
-                    FuelBut(
-                      label: "Diesel",
-                      isSelected: selectedButtonIndex == 1,
-                      onPressed: () {
-                        setState(() {
-                          selectedButtonIndex = 1;
-                        });
-                      },
-                    ),
-                    SizedBox(width: 18),
-                    FuelBut(
-                      label: "Electric",
-                      isSelected: selectedButtonIndex == 2,
-                      onPressed: () {
-                        setState(() {
-                          selectedButtonIndex = 2;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Text(
-                    "Transmission Type",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          isPressedManual = !isPressedManual;
-                          if (isPressedManual) {
-                            isPressedAutomatic =
-                                false; // Set other button state to false
-                          }
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        backgroundColor:
-                            isPressedManual ? Colors.green : Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            top: 8.0, bottom: 8, left: 18, right: 18),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.home_sharp),
-                            SizedBox(height: 8),
-                            Text("Manual"),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 18),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          isPressedAutomatic = !isPressedAutomatic;
-                          if (isPressedAutomatic) {
-                            isPressedManual =
-                                false; // Set other button state to false
-                          }
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        backgroundColor:
-                            isPressedAutomatic ? Colors.green : Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            top: 8.0, bottom: 8, left: 15, right: 15),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.home_sharp),
-                            SizedBox(height: 8),
-                            Text("Automatic"),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Text(
-                    "Seats",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          isPressed5 = !isPressed5;
-                          if (isPressed5) {
-                            isPressed7 =
-                                false; // Set other button state to false
-                          }
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        backgroundColor:
-                            isPressed5 ? Colors.green : Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            top: 8.0, bottom: 8, left: 18, right: 18),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.home_sharp),
-                            SizedBox(height: 8),
-                            Text("5 Seats"),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 18),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          isPressed7 = !isPressed7;
-                          if (isPressed7) {
-                            isPressed5 =
-                                false; // Set other button state to false
-                          }
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        backgroundColor:
-                            isPressed7 ? Colors.green : Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            top: 8.0, bottom: 8, left: 15, right: 15),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.home_sharp),
-                            SizedBox(height: 8),
-                            Text("7 Seater"),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Text(
-                    "Car Km Driven",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Slider(
-                  value: _currentSliderValue,
-                  max: 100000,
-                  divisions: 100,
-                  label: _currentSliderValue.round().toString() + " Km",
-                  onChanged: (double value) {
-                    setState(() {
-                      _currentSliderValue = value;
-                    });
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Text(
-                    "Approx Km Driven",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-                SizedBox(
-                  height: 25,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: TextField(
-                    controller: _carchassis,
-                    decoration: InputDecoration(
-                      labelText: 'Chassis Number',
-                      hintText: 'Enter Chassis Number',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20, right: 20),
-                  child: Text(
-                    "You can find the chassis number(17 digit number) on your RC Card.",
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        checkColor: Colors.white,
-                        value: isChecked,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            isChecked = value!;
-                          });
-                        },
-                      ),
-                      SizedBox(
-                        width: 12,
-                      ),
-                      Text(
-                        "I accept Terms & Conditions",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: size.height * 0.10,
-            width: size.width,
-            child: BottomAppBar(
-              child: Container(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Card(
-                      child: Container(
-                          width: 300,
-                          height: 40,
-                          child: ElevatedButton(
-                            style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStatePropertyAll<Color>(
-                                        Colors.green)),
-                            onPressed: () {
-                              submitform();
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => HostNav()));
-                            },
-                            child: Text("Next"),
-                          )),
-                    ),
                   ],
                 ),
               ),
-            ),
+              Container(
+                height: size.height * 0.10,
+                width: size.width,
+                child: BottomAppBar(
+                  child: Container(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Card(
+                          child: Container(
+                              width: 300,
+                              height: 40,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    primary: Color.fromRGBO(254, 205, 59,
+                                        1.0), // Set the background color
+                                    onPrimary: Colors.black,
+                                    side: BorderSide(color: Colors.deepPurple)),
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate() &&
+                                      isChecked) {
+                                    // Form is valid and checkbox is checked, proceed with form submission
+                                    submitform();
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => HostNav()));
+                                  } else {
+                                    // Display an error message if checkbox is not checked
+                                    if (!isChecked) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              'Please accept the Terms & Conditions.'),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: Text("SUBMIT",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: size.width * 0.06)),
+                              )),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -627,10 +707,10 @@ class _HostEliState extends State<HostEli> {
 
 InputDecorationTheme customInputDecorationTheme() {
   OutlineInputBorder outlineInputBorder = OutlineInputBorder(
-    borderRadius: BorderRadius.zero, // Customize the border radius as needed
+    // Customize the border radius as needed
     borderSide: BorderSide(
-        color: Colors.blueAccent), // Customize the border color as needed
-    gapPadding: 0,
+        color: Colors.deepPurple), // Customize the border color as needed
+    gapPadding: 5,
   );
   return InputDecorationTheme(
     floatingLabelBehavior:

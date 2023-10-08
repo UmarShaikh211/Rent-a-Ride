@@ -93,7 +93,6 @@ class _TripState extends State<Trip> {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    physics: NeverScrollableScrollPhysics(),
                     itemCount:
                         filteredBookingStatusList(selectedFilter.value).length,
                     itemBuilder: (context, index) {
@@ -129,7 +128,8 @@ class _TripState extends State<Trip> {
                                         height: 100,
                                         width: 100,
                                         child: Image.network(
-                                          "${bookingStatusData.image}",
+                                          "${bookingStatusData.image}" ??
+                                              'Image not available',
                                           fit: BoxFit.cover,
                                         ),
                                       ),

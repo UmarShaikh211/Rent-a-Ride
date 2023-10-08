@@ -218,14 +218,16 @@ class _HostimgState extends State<Hostimg> {
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return Theme(
       data: Theme.of(context).copyWith(
         inputDecorationTheme: customInputDecorationTheme(),
       ),
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Add Images"),
-          backgroundColor: Colors.teal,
+          title: Text("Car Images"),
+          backgroundColor: Color.fromRGBO(254, 205, 59, 1.0),
+          foregroundColor: Colors.black,
         ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,14 +612,18 @@ class _HostimgState extends State<Hostimg> {
                             width: 320,
                             height: 45,
                             child: ElevatedButton(
-                              style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStatePropertyAll<Color>(
-                                          Colors.green)),
+                              style: ElevatedButton.styleFrom(
+                                  primary: Color.fromRGBO(254, 205, 59,
+                                      1.0), // Set the background color
+                                  onPrimary: Colors.black,
+                                  side: BorderSide(color: Colors.deepPurple)),
                               onPressed: () {
                                 _openImageSheet();
                               },
-                              child: Text("Add Photos"),
+                              child: Text("ADD IMAGES",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: size.width * 0.05)),
                             )),
                       ),
                     ],
@@ -635,8 +641,8 @@ class _HostimgState extends State<Hostimg> {
 InputDecorationTheme customInputDecorationTheme() {
   OutlineInputBorder outlineInputBorder = OutlineInputBorder(
     // Customize the border radius as needed
-    borderSide:
-        BorderSide(color: Colors.teal), // Customize the border color as needed
+    borderSide: BorderSide(
+        color: Colors.deepPurple), // Customize the border color as needed
     gapPadding: 5,
   );
   return InputDecorationTheme(

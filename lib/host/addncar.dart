@@ -27,7 +27,6 @@ class _CarAddState extends State<CarAdd> {
     if (userId != null) {
       fetchLastCarId(userId);
     }
-    // Fetch lastCarId if user is pre-existing
   }
 
   Future<void> fetchLastCarId(String userId) async {
@@ -35,10 +34,9 @@ class _CarAddState extends State<CarAdd> {
       print("Fetching last car ID...");
       lastCarId = await someApi.ApiService.getLastCarId(userId);
       print("Last Car ID fetched: $lastCarId");
-      setState(() {}); // Rebuild the UI to show the lastCarId
+      setState(() {});
     } catch (e) {
       print("Error fetching last car ID: $e");
-      // Handle errors when fetching the last car ID
     }
   }
 
@@ -46,8 +44,7 @@ class _CarAddState extends State<CarAdd> {
     try {
       print("Creating a new car...");
 
-      final carId =
-          await someApi.ApiService.createCar(userId); // Create a shared car
+      final carId = await someApi.ApiService.createCar(userId);
 
       print("Car created with ID: $carId");
       setState(() {
@@ -60,98 +57,132 @@ class _CarAddState extends State<CarAdd> {
         MaterialPageRoute(
           builder: (context) => HostLic(userId),
         ),
-        (route) => false, // This prevents going back to the previous page.
+        (route) => false,
       );
     } catch (e) {
       print("Error creating car: $e");
-      // Show error message or handle errors
     }
   }
 
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Add New Car"),
-        backgroundColor: Colors.teal,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text("Add New Car"),
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.black,
       ),
       body: Column(
         children: [
-          SizedBox(
-            height: 20,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                child: Container(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: Icon(
-                          Icons.ac_unit_outlined,
-                        ),
-                        title: Text(
-                          "Earn Extra Income",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          "Make money by renting out your car when you're not using it.",
-                        ),
-                      ),
-                      Divider(),
-                      ListTile(
-                        leading: Icon(
-                          Icons.ac_unit_outlined,
-                        ),
-                        title: Text(
-                          "Low Maintenance Costs",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          "Cover your car's expenses through rentals.",
-                        ),
-                      ),
-                      Divider(),
-                      ListTile(
-                        leading: Icon(
-                          Icons.ac_unit_outlined,
-                        ),
-                        title: Text(
-                          "Flexible Schedule",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          "Choose when and for how long you want to rent your car.",
-                        ),
-                      ),
-                      Divider(),
-                      ListTile(
-                        leading: Icon(
-                          Icons.ac_unit_outlined,
-                        ),
-                        title: Text(
-                          "Insurance Coverage",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          "Enjoy peace of mind with insurance protection for renters.",
-                        ),
-                      ),
-                    ],
+          SizedBox(height: 20),
+          Card(
+            elevation: 0,
+            margin: EdgeInsets.symmetric(horizontal: 5),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Icon(
+                    Icons.monetization_on,
+                    color: Colors.deepPurple,
+                    size: 30,
+                  ),
+                  title: Text(
+                    "Earn Extra Income",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Make money by renting out your car when you're not using it.",
+                    style: TextStyle(fontSize: 16),
                   ),
                 ),
-              ),
+                Divider(),
+                ListTile(
+                  leading: Icon(
+                    Icons.build,
+                    color: Colors.deepPurple,
+                    size: 30,
+                  ),
+                  title: Text(
+                    "Low Maintenance Costs",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Cover your car's expenses through rentals.",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                Divider(),
+                ListTile(
+                  leading: Icon(
+                    Icons.schedule,
+                    color: Colors.deepPurple,
+                    size: 30,
+                  ),
+                  title: Text(
+                    "Flexible Schedule",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Choose when and for how long you want to rent your car.",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                Divider(),
+                ListTile(
+                  leading: Icon(
+                    Icons.security,
+                    color: Colors.deepPurple,
+                    size: 30,
+                  ),
+                  title: Text(
+                    "Insurance Coverage",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Enjoy peace of mind with insurance protection for renters.",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(
-            height: 20,
-          ),
+          SizedBox(height: 20),
           ElevatedButton(
-              onPressed: () {
-                _handleCreateCar(userId);
-              },
-              child: Text("Add Car"))
+            style: ElevatedButton.styleFrom(
+                primary: Color.fromRGBO(
+                    254, 205, 59, 1.0), // Set the background color
+                onPrimary: Colors.black,
+                side: BorderSide(color: Colors.deepPurple),
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10)),
+            onPressed: () {
+              _handleCreateCar(userId);
+            },
+            child: Text("ADD CAR",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: size.width * 0.06,
+                    fontFamily: 'Times New Roman')),
+          )
         ],
       ),
     );

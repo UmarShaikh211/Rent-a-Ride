@@ -1,29 +1,13 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FAQ',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: FAQPage(),
-    );
-  }
-}
-
 class FAQPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('FAQ'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.black,
       ),
       body: ListView(
         children: <Widget>[
@@ -88,7 +72,7 @@ class _FAQItemState extends State<FAQItem> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18.0,
-                color: Colors.blue,
+                color: Colors.deepPurple,
               ),
             ),
             trailing: IconButton(

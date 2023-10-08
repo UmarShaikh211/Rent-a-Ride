@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rentcartest/host/faq.dart';
+import 'package:rentcartest/host/hpolicy.dart';
 import 'package:rentcartest/host/profile_pages/addbank.dart';
 import 'package:rentcartest/host/profile_pages/carsetting.dart';
 import 'package:rentcartest/host/profile_pages/guestwelcome.dart';
+import 'package:rentcartest/host/profile_pages/host_location.dart';
 import 'package:rentcartest/host/profile_pages/offers.dart';
 import 'package:rentcartest/host/profile_pages/pricing.dart';
 import 'package:rentcartest/host/profile_pages/program.dart';
@@ -13,6 +16,7 @@ import 'package:rentcartest/host/profile_pages/refer.dart';
 import 'package:rentcartest/host/profile_pages/savebank.dart';
 import 'package:rentcartest/main.dart';
 import 'package:http/http.dart' as http;
+import 'package:rentcartest/user/navbar.dart';
 import '../user/global.dart';
 import 'host_drawer.dart';
 
@@ -68,7 +72,8 @@ class _HostProState extends State<HostPro> {
     return Scaffold(
       drawer: HostDraw(),
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.black,
         title: Text("Account"),
         leading: Builder(
           builder: (context) => IconButton(
@@ -106,7 +111,7 @@ class _HostProState extends State<HostPro> {
                         radius: 40,
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(top: 15),
+                        padding: const EdgeInsets.only(top: 12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -114,12 +119,13 @@ class _HostProState extends State<HostPro> {
                               uname,
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.cyanAccent,
+                                  color: Theme.of(context).primaryColor,
                                   fontSize: 17),
                             ),
                             Text(
                               uemail,
-                              style: TextStyle(color: Colors.white),
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 13),
                             ),
                             SizedBox(
                               height: 5,
@@ -131,12 +137,6 @@ class _HostProState extends State<HostPro> {
                           ],
                         ),
                       ),
-                      IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            color: Colors.white,
-                          )),
                     ],
                   ),
                 ),
@@ -145,7 +145,10 @@ class _HostProState extends State<HostPro> {
                 height: 10,
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => HostLocation()));
+                },
                 child: ListTile(
                   leading: Icon(Icons.location_on_sharp),
                   title: Text("Listing Location Details"),
@@ -176,23 +179,23 @@ class _HostProState extends State<HostPro> {
                   trailing: Icon(Icons.arrow_forward_ios_outlined),
                 ),
               ),
+              // Divider(),
+              // GestureDetector(
+              //   onTap: () {
+              //     Navigator.push(context,
+              //         MaterialPageRoute(builder: (context) => SaveBanlk()));
+              //   },
+              //   child: ListTile(
+              //     leading: Icon(Icons.credit_card_sharp),
+              //     title: Text("View Bank Details"),
+              //     trailing: Icon(Icons.arrow_forward_ios_outlined),
+              //   ),
+              // ),
               Divider(),
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => SaveBanlk()));
-                },
-                child: ListTile(
-                  leading: Icon(Icons.credit_card_sharp),
-                  title: Text("View Bank Details"),
-                  trailing: Icon(Icons.arrow_forward_ios_outlined),
-                ),
-              ),
-              Divider(),
-              GestureDetector(
-                onTap: () {
-                  // Navigator.push(context,
-                  //     MaterialPageRoute(builder: (context) => Refer()));
+                      MaterialPageRoute(builder: (context) => ReferralPage()));
                 },
                 child: ListTile(
                   leading: Icon(Icons.satellite_alt_sharp),
@@ -220,15 +223,51 @@ class _HostProState extends State<HostPro> {
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => GuestWelcome()));
+                      MaterialPageRoute(builder: (context) => FAQPage()));
                 },
                 child: ListTile(
-                  leading: Icon(Icons.message_outlined),
-                  title: Text("Guest Welcome Message"),
+                  leading: Icon(Icons.question_mark_outlined),
+                  title: Text("FAQ"),
                   trailing: Icon(Icons.arrow_forward_ios_outlined),
                 ),
               ),
               Divider(),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => HostPolicy()));
+                },
+                child: ListTile(
+                  leading: Icon(Icons.policy_outlined),
+                  title: Text("Policies"),
+                  trailing: Icon(Icons.arrow_forward_ios_outlined),
+                ),
+              ),
+              Divider(),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => bottomnav()));
+                },
+                child: ListTile(
+                  leading: Icon(Icons.exit_to_app_outlined),
+                  title: Text("Logout"),
+                  trailing: Icon(Icons.arrow_forward_ios_outlined),
+                ),
+              ),
+              // Divider(),
+              // GestureDetector(
+              //   onTap: () {
+              //     Navigator.push(context,
+              //         MaterialPageRoute(builder: (context) => GuestWelcome()));
+              //   },
+              //   child: ListTile(
+              //     leading: Icon(Icons.message_outlined),
+              //     title: Text("Guest Welcome Message"),
+              //     trailing: Icon(Icons.arrow_forward_ios_outlined),
+              //   ),
+              // ),
+              // Divider(),
               // GestureDetector(
               //   onTap: () {
               //     Navigator.push(context,
@@ -241,17 +280,17 @@ class _HostProState extends State<HostPro> {
               //   ),
               // ),
               // Divider(),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => CarSettings()));
-                },
-                child: ListTile(
-                  leading: Icon(Icons.local_gas_station_outlined),
-                  title: Text("Car Settings"),
-                  trailing: Icon(Icons.arrow_forward_ios_outlined),
-                ),
-              ),
+              // GestureDetector(
+              //   onTap: () {
+              //     Navigator.push(context,
+              //         MaterialPageRoute(builder: (context) => CarSettings()));
+              //   },
+              //   child: ListTile(
+              //     leading: Icon(Icons.local_gas_station_outlined),
+              //     title: Text("Car Settings"),
+              //     trailing: Icon(Icons.arrow_forward_ios_outlined),
+              //   ),
+              // ),
             ],
           ),
         ),

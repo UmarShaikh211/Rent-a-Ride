@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rentcartest/user/Userlogin/pages/logint.dart';
 import 'package:rentcartest/user/constants.dart';
 import 'package:rentcartest/screens/sign_in/sign_in_screen.dart';
 import 'package:rentcartest/user/size_config.dart';
@@ -52,7 +53,7 @@ class _BodyState extends State<Body> {
               ),
             ),
             Expanded(
-              flex: 2,
+              flex: 1,
               child: Padding(
                 padding: EdgeInsets.symmetric(
                     horizontal: getProportionateScreenWidth(20)),
@@ -66,11 +67,15 @@ class _BodyState extends State<Body> {
                         (index) => buildDot(index: index),
                       ),
                     ),
-                    Spacer(flex: 3),
+                    Spacer(flex: 2),
                     DefaultButton(
                       text: "Continue",
                       press: () {
-                        Navigator.pushNamed(context, SignInScreen.routeName);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginPage(),
+                            ));
                       },
                     ),
                     Spacer(),

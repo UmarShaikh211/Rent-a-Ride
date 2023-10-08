@@ -204,23 +204,29 @@ class Reviewcon extends StatelessWidget {
       height: size.height * 0.14,
       width: size.width * 0.6,
       decoration: BoxDecoration(
-          border: Border.all(color: Colors.deepPurple),
+          color: Colors.deepPurple,
+          border: Border.all(color: Theme.of(context).primaryColor),
           borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        child: Column(
-          children: [
-            Text(Review + '\n' + '~' + Name,
-                style: TextStyle(fontSize: size.width * 0.035)),
-            // Padding(
-            //   padding: const EdgeInsets.only(left: 48.0),
-            //   child: Text(
-            //     '~' + Name,
-            //     style: TextStyle(
-            //         fontWeight: FontWeight.bold, fontSize: size.width * 0.04),
-            //   ),
-            // ),
-          ],
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+          child: Column(
+            children: [
+              Text(Review + '\n' + '~' + Name,
+                  style: TextStyle(
+                      fontSize: size.width * 0.038,
+                      color: Theme.of(context).primaryColor,
+                      fontWeight: FontWeight.bold)),
+              // Padding(
+              //   padding: const EdgeInsets.only(left: 48.0),
+              //   child: Text(
+              //     '~' + Name,
+              //     style: TextStyle(
+              //         fontWeight: FontWeight.bold, fontSize: size.width * 0.04),
+              //   ),
+              // ),
+            ],
+          ),
         ),
       ),
     );
@@ -490,14 +496,16 @@ class FuelBut extends StatelessWidget {
       onPressed: onPressed,
       style: TextButton.styleFrom(
         elevation: 10,
-        backgroundColor: isSelected ? Colors.red : Colors.blue,
+        backgroundColor:
+            isSelected ? Theme.of(context).primaryColor : Colors.deepPurple,
       ),
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white,
+            color:
+                isSelected ? Colors.deepPurple : Theme.of(context).primaryColor,
           ),
         ),
       ),

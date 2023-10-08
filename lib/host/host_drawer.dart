@@ -44,11 +44,17 @@ class _HostDrawState extends State<HostDraw> {
         },
         child: Row(
           children: [
-            Icon(Icons.directions_car_filled_sharp),
+            Icon(
+              Icons.directions_car_filled_sharp,
+              color: Colors.deepPurple,
+            ),
             SizedBox(
               width: 20,
             ),
-            Text("Add a Car")
+            Text(
+              "Add a Car",
+              style: TextStyle(color: Colors.black87),
+            )
           ],
         ),
       ),
@@ -62,7 +68,10 @@ class _HostDrawState extends State<HostDraw> {
         },
         child: Row(
           children: [
-            Icon(Icons.camera_alt_outlined),
+            Icon(
+              Icons.camera_alt_outlined,
+              color: Colors.deepPurple,
+            ),
             SizedBox(
               width: 20,
             ),
@@ -80,7 +89,10 @@ class _HostDrawState extends State<HostDraw> {
         },
         child: Row(
           children: [
-            Icon(Icons.person),
+            Icon(
+              Icons.person,
+              color: Colors.deepPurple,
+            ),
             SizedBox(
               width: 20,
             ),
@@ -101,7 +113,10 @@ class _HostDrawState extends State<HostDraw> {
         },
         child: Row(
           children: [
-            Icon(Icons.money_sharp),
+            Icon(
+              Icons.money_sharp,
+              color: Colors.deepPurple,
+            ),
             SizedBox(
               width: 20,
             ),
@@ -110,15 +125,15 @@ class _HostDrawState extends State<HostDraw> {
         ),
       ),
     ),
-    DrawerItem(
-        widget: Divider(
-      thickness: 2,
-    )),
+
     DrawerItem(
       widget: InkWell(
         child: Row(
           children: [
-            Icon(Icons.message_outlined),
+            Icon(
+              Icons.message_outlined,
+              color: Colors.deepPurple,
+            ),
             SizedBox(
               width: 20,
             ),
@@ -135,7 +150,10 @@ class _HostDrawState extends State<HostDraw> {
         },
         child: Row(
           children: [
-            Icon(Icons.question_mark_outlined),
+            Icon(
+              Icons.question_mark_outlined,
+              color: Colors.deepPurple,
+            ),
             SizedBox(
               width: 20,
             ),
@@ -152,7 +170,10 @@ class _HostDrawState extends State<HostDraw> {
         },
         child: Row(
           children: [
-            Icon(Icons.book_outlined),
+            Icon(
+              Icons.book_outlined,
+              color: Colors.deepPurple,
+            ),
             SizedBox(
               width: 20,
             ),
@@ -283,55 +304,32 @@ class _drawertopState extends State<drawertop> {
   Widget build(BuildContext context) {
     return DrawerHeader(
         decoration: BoxDecoration(
-            gradient: SweepGradient(
-          colors: <Color>[
-            Color(0xFF000000), // blue
-            Color(0xFF0608E7), // green
-            Color(0xFF2500B2), // yellow
-            Color(0xFFF400FF), // red
-            Color(
-                0xFF000A65), // blue again to seamlessly transition to the start
-          ],
-        )),
+            color: Theme.of(context).primaryColor,
+            border: Border.all(color: Colors.black)),
         child: Container(
             decoration: BoxDecoration(
               color: Colors.transparent,
             ),
             height: 105,
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CircleAvatar(
-                    backgroundImage:
-                        AssetImage("assets/images/Profile Image.png"),
-                    radius: 35,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          uname,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.cyanAccent,
-                              fontSize: 17),
-                        ),
-                        Text(
-                          uemail,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          uphone,
-                          style: TextStyle(color: Colors.white),
-                        )
-                      ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CircleAvatar(
+                      backgroundImage:
+                          AssetImage("assets/images/Profile Image.png"),
+                      radius: 40,
                     ),
-                  ),
-                ])));
+                    Text(
+                      uname,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "Algreian",
+                          color: Colors.black,
+                          fontSize: 25),
+                    ),
+                  ]),
+            )));
   }
 }

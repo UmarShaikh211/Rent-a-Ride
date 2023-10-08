@@ -95,8 +95,9 @@ class _PricingState extends State<Pricing> {
       ),
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.teal,
           title: Text("Pricing Control"),
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.black,
         ),
         body: Theme(
           data: Theme.of(context).copyWith(
@@ -279,10 +280,12 @@ class _PricingState extends State<Pricing> {
                                 width: 320,
                                 height: 45,
                                 child: ElevatedButton(
-                                  style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStatePropertyAll<Color>(
-                                              Colors.green)),
+                                  style: ElevatedButton.styleFrom(
+                                      primary: Color.fromRGBO(254, 205, 59,
+                                          1.0), // Set the background color
+                                      onPrimary: Colors.black,
+                                      side:
+                                          BorderSide(color: Colors.deepPurple)),
                                   onPressed: () async {
                                     final amountValue = int.tryParse(amt.text);
 
@@ -319,7 +322,10 @@ class _PricingState extends State<Pricing> {
                                           'Error ${response.statusCode}: ${response.body}');
                                     }
                                   },
-                                  child: Text("Save"),
+                                  child: Text("SAVE",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20)),
                                 )),
                           ),
                         ],
@@ -339,8 +345,8 @@ class _PricingState extends State<Pricing> {
 InputDecorationTheme customInputDecorationTheme() {
   OutlineInputBorder outlineInputBorder = OutlineInputBorder(
     // Customize the border radius as needed
-    borderSide:
-        BorderSide(color: Colors.teal), // Customize the border color as needed
+    borderSide: BorderSide(
+        color: Colors.deepPurple), // Customize the border color as needed
     gapPadding: 5,
   );
   return InputDecorationTheme(

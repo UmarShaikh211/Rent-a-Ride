@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rentcartest/user/size_config.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalendarPage extends StatefulWidget {
@@ -26,12 +27,44 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Select Dates'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.black,
       ),
       body: Column(
         children: [
           TableCalendar(
             firstDay: DateTime.utc(2020, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
+            calendarStyle: CalendarStyle(
+              outsideDaysVisible: false,
+              rangeHighlightColor: Color.fromRGBO(254, 205, 59, 1.0),
+              selectedTextStyle: TextStyle(
+                  color: Colors.black,
+                  fontSize: getProportionateScreenHeight(14)),
+              selectedDecoration: BoxDecoration(
+                  color: Colors.deepPurpleAccent, shape: BoxShape.circle),
+              rangeStartDecoration: BoxDecoration(
+                  color: Colors.deepPurpleAccent, shape: BoxShape.circle),
+              rangeEndDecoration: BoxDecoration(
+                  color: Colors.deepPurpleAccent, shape: BoxShape.circle),
+              withinRangeTextStyle: TextStyle(color: Colors.black),
+              outsideTextStyle: TextStyle(
+                  color: Colors.grey,
+                  fontSize: getProportionateScreenHeight(14)),
+              defaultTextStyle: TextStyle(
+                  color: Colors.black,
+                  fontSize: getProportionateScreenHeight(14)),
+              weekendTextStyle: TextStyle(
+                  color: Colors.black,
+                  fontSize: getProportionateScreenHeight(14)),
+              todayDecoration:
+                  BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+              todayTextStyle: TextStyle(color: Theme.of(context).primaryColor),
+              disabledTextStyle: TextStyle(
+                  color: Colors.grey,
+                  fontSize: getProportionateScreenHeight(14)),
+              markersAutoAligned: true,
+            ),
             focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             rangeStartDay: _rangeStart,
@@ -69,11 +102,22 @@ class _CalendarPageState extends State<CalendarPage> {
               _focusedDay = focusedDay;
             },
             enabledDayPredicate: (DateTime day) {
-              // Disable dates before the current day
-              return !day.isBefore(DateTime.now());
+              // Enable dates that are equal to or after the current day
+              final now = DateTime.now();
+              return !day.isBefore(DateTime(now.year, now.month, now.day));
             },
           ),
+          Divider(
+            color: Colors.black,
+          ),
+          SizedBox(
+            height: 5,
+          ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.black,
+                side: BorderSide(color: Colors.deepPurple)),
             onPressed: _submitSelectedDates,
             child: Text('Submit'),
           ),

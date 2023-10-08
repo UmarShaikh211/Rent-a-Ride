@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:rentcartest/host/hlogin.dart';
+import 'package:rentcartest/screens/splash/splash_screen.dart';
+import 'package:rentcartest/user/Userlogin/pages/logint.dart';
+import 'package:rentcartest/user/usertc.dart';
+
+import 'account.dart';
 
 class NewProfile extends StatefulWidget {
   const NewProfile({super.key});
@@ -27,15 +32,16 @@ class _NewProfileState extends State<NewProfile> {
               padding: const EdgeInsets.all(16.0),
               child: CircleAvatar(
                 radius: 70,
-                backgroundColor:
-                    Colors.black, // Replace with your profile image
+                foregroundImage: AssetImage(
+                    'assets/icons/User Icon.svg'), // Replace with your profile image
               ),
             ),
             ProfileCard(
               icon: Icons.person,
               title: 'My Account',
               onTap: () {
-                // Handle My Account tap
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Account()));
               },
             ),
             ProfileCard(
@@ -50,14 +56,17 @@ class _NewProfileState extends State<NewProfile> {
               icon: Icons.info,
               title: 'Terms & Conditions',
               onTap: () {
-                // Handle Terms & Conditions tap
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => UserTerms()));
               },
             ),
             ProfileCard(
               icon: Icons.logout,
               title: 'Logout',
               onTap: () {
-                // Handle Logout tap
+                Navigator.pushReplacement(
+                    context, // Use pushReplacement
+                    MaterialPageRoute(builder: (context) => SplashScreen()));
               },
             ),
           ],

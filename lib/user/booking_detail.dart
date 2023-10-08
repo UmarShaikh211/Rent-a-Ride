@@ -9,6 +9,7 @@ import 'global.dart';
 
 class Bookindetail extends StatefulWidget {
   final String carId;
+
   const Bookindetail({Key? key, required this.carId}) : super(key: key);
 
   @override
@@ -33,8 +34,12 @@ class _BookindetailState extends State<Bookindetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Booking Details'),
-        backgroundColor: Colors.teal,
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text("Rate Car"),
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.black,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -44,6 +49,9 @@ class _BookindetailState extends State<Bookindetail> {
             Text(
               'Rate this Car:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: 8,
             ),
             RatingBar.builder(
               initialRating: rating,
@@ -67,6 +75,9 @@ class _BookindetailState extends State<Bookindetail> {
               'Write a Review:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            SizedBox(
+              height: 8,
+            ),
             TextField(
               controller: reviewController,
               maxLines: 3, // Adjust the number of lines as needed
@@ -76,56 +87,63 @@ class _BookindetailState extends State<Bookindetail> {
               ),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                // Implement logic to submit the rating and review to the server
-                final double selectedRating = rating;
-                final String reviewText = reviewController.text;
+            Center(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    primary: Color.fromRGBO(
+                        254, 205, 59, 1.0), // Set the background color
+                    onPrimary: Colors.black,
+                    side: BorderSide(color: Colors.deepPurple)),
+                onPressed: () async {
+                  // Implement logic to submit the rating and review to the server
+                  final double selectedRating = rating;
+                  final String reviewText = reviewController.text;
 
-                final response = await http.post(
-                  Uri.parse(
-                      '$globalapiUrl/review/'), // Replace with your Django backend URL
-                  headers: <String, String>{
-                    'Content-Type': 'application/json; charset=UTF-8',
-                  },
-                  body: jsonEncode(
-                    <String, dynamic>{
-                      'car': widget.carId,
-                      'user': userId,
-                      'text': reviewText,
+                  final response = await http.post(
+                    Uri.parse(
+                        '$globalapiUrl/review/'), // Replace with your Django backend URL
+                    headers: <String, String>{
+                      'Content-Type': 'application/json; charset=UTF-8',
                     },
-                  ),
-                );
+                    body: jsonEncode(
+                      <String, dynamic>{
+                        'car': widget.carId,
+                        'user': userId,
+                        'text': reviewText,
+                      },
+                    ),
+                  );
 
-                if (response.statusCode == 201) {
-                  print('Success: ${response.body}');
-                } else {
-                  print('Error ${response.statusCode}: ${response.body}');
-                }
+                  if (response.statusCode == 201) {
+                    print('Success: ${response.body}');
+                  } else {
+                    print('Error ${response.statusCode}: ${response.body}');
+                  }
 
-                ///Rating
-                final response2 = await http.post(
-                  Uri.parse(
-                      '$globalapiUrl/rating/'), // Replace with your Django backend URL
-                  headers: <String, String>{
-                    'Content-Type': 'application/json; charset=UTF-8',
-                  },
-                  body: jsonEncode(
-                    <String, dynamic>{
-                      'car': widget.carId,
-                      'user': userId,
-                      'rating': rating,
+                  ///Rating
+                  final response2 = await http.post(
+                    Uri.parse(
+                        '$globalapiUrl/rating/'), // Replace with your Django backend URL
+                    headers: <String, String>{
+                      'Content-Type': 'application/json; charset=UTF-8',
                     },
-                  ),
-                );
+                    body: jsonEncode(
+                      <String, dynamic>{
+                        'car': widget.carId,
+                        'user': userId,
+                        'rating': rating,
+                      },
+                    ),
+                  );
 
-                if (response2.statusCode == 201) {
-                  print('Success: ${response2.body}');
-                } else {
-                  print('Error ${response2.statusCode}: ${response2.body}');
-                }
-              },
-              child: Text('Submit'),
+                  if (response2.statusCode == 201) {
+                    print('Success: ${response2.body}');
+                  } else {
+                    print('Error ${response2.statusCode}: ${response2.body}');
+                  }
+                },
+                child: Text('Submit'),
+              ),
             ),
           ],
         ),

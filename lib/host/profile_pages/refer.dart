@@ -1,88 +1,55 @@
-// import 'package:flutter/material.dart';
-// import 'package:url_launcher/url_launcher.dart';
-//
-// class Refer extends StatefulWidget {
-//   const Refer({Key? key});
-//
-//   @override
-//   State<Refer> createState() => _ReferState();
-// }
-//
-// class _ReferState extends State<Refer> {
-//   TextEditingController link = TextEditingController();
-//   String _link = "https://github.com/UmarShaikh211/Rent-a-Ride";
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     // Set the text fields with recommended values initially
-//     link.text = _link;
-//   }
-//
-//   void _shareLink() async {
-//     final String url = "https://github.com/UmarShaikh211/Rent-a-Ride";
-//
-//     try {
-//       if (await canLaunch(url)) {
-//         await launch(url);
-//       } else {
-//         throw 'Could not launch $url';
-//       }
-//     } catch (e) {
-//       print('Error: $e');
-//       // Handle the error as needed
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text("Refer App"),
-//         backgroundColor: Colors.teal,
-//         actions: <Widget>[
-//           IconButton(
-//             icon: Icon(Icons.share),
-//             onPressed: _shareLink,
-//           ),
-//         ],
-//       ),
-//       body: Column(
-//         crossAxisAlignment: CrossAxisAlignment.center,
-//         children: [
-//           SizedBox(
-//             height: 20,
-//           ),
-//           Text(
-//             "Refer our App",
-//             style: TextStyle(
-//               fontSize: 24,
-//               fontWeight: FontWeight.bold,
-//             ),
-//           ),
-//           SizedBox(
-//             height: 20,
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 20),
-//             child: TextField(
-//               controller: link,
-//               readOnly: true,
-//               decoration: InputDecoration(
-//                 labelText: "App Link",
-//                 border: OutlineInputBorder(),
-//               ),
-//             ),
-//           ),
-//           SizedBox(
-//             height: 20,
-//           ),
-//           ElevatedButton(
-//             onPressed: _shareLink,
-//             child: Text("Share Link"),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+class ReferralPage extends StatelessWidget {
+  final String referralCode =
+      "RENT-A-RIDE"; // Replace with your actual referral code
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Referral Page'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.black,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Your Referral Code:',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 10),
+            Text(
+              referralCode,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  primary: Color.fromRGBO(
+                      254, 205, 59, 1.0), // Set the background color
+                  onPrimary: Colors.black,
+                  side: BorderSide(color: Colors.deepPurple)),
+              onPressed: () {
+                // Copy the referral code to the clipboard
+                Clipboard.setData(ClipboardData(text: referralCode));
+                final snackBar = SnackBar(
+                  content: Text('Referral code copied to clipboard!'),
+                  duration: Duration(seconds: 2),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              },
+              child: Text('Copy Referral Code'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:provider/provider.dart';
+import 'package:rentcartest/host/host_analytics.dart';
+import 'package:rentcartest/host/host_navbar.dart';
 import 'package:rentcartest/main.dart';
 
 import '../user/global.dart';
@@ -26,6 +31,10 @@ class _HostBioState extends State<HostBio> {
   String? selectedCarId = '';
   String? userId;
   XFile? _pickedImage; // Declare _pickedImage here as an instance variable
+  Widget? _displayedImage;
+  final _phoneFormatter = FilteringTextInputFormatter.digitsOnly;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _autoValidate = false;
 
   @override
   bool _isReadOnly = true;
@@ -98,9 +107,22 @@ class _HostBioState extends State<HostBio> {
     final pickedImage =
         await ImagePicker().pickImage(source: ImageSource.gallery);
 
-    setState(() {
-      _pickedImage = pickedImage;
-    });
+    if (pickedImage != null) {
+      setState(() {
+        _pickedImage = pickedImage;
+        _displayedImage = Container(
+          width: 120, // Adjust the width and height as needed
+          height: 110,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            image: DecorationImage(
+              image: FileImage(File(pickedImage.path)),
+              fit: BoxFit.cover,
+            ),
+          ),
+        ); // Display the picked image in a rounded container with BoxFit.cover
+      });
+    }
   }
 
   void _toggleEditable() {
@@ -113,6 +135,26 @@ class _HostBioState extends State<HostBio> {
     });
   }
 
+  String? _validateGuestPhone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Guest phone number is required.';
+    }
+    if (value.length != 10) {
+      return 'Guest phone number must be 10 digits.';
+    }
+    if (!RegExp(r'^[0-9]*$').hasMatch(value)) {
+      return 'Guest phone number must contain only digits.';
+    }
+    return null;
+  }
+
+  String? _validateBio(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Guest phone number is required.';
+    }
+    return null;
+  }
+
   @override
   void dispose() {
     _focusNode.dispose();
@@ -121,6 +163,7 @@ class _HostBioState extends State<HostBio> {
 
   Future<void> addhostbio(
     String carId,
+    String userId,
     String guestphone,
     String himgPath,
     String hbio,
@@ -133,9 +176,10 @@ class _HostBioState extends State<HostBio> {
 
       request.fields.addAll({
         'car': carId,
+        'user': userId,
         'Gphone': guestphone,
         'Hbio': hbio,
-        // Add other fields as needed
+        // Add othe fields as needed
       });
 
       if (_pickedImage != null) {
@@ -171,10 +215,14 @@ class _HostBioState extends State<HostBio> {
       print('Host Image: $himg');
       print('Host Bio: $hbio');
 
-      await addhostbio(selectedCarId!, guestphone, himg, hbio);
+      await addhostbio(selectedCarId!, userId!, guestphone, himg, hbio);
 
       print('Bio saved successfully'); // Print success message
-
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HostNav(),
+          ));
       // Show success message or navigate to the next page
     } catch (e) {
       print('Error saving bio: $e'); // Print error message
@@ -184,216 +232,193 @@ class _HostBioState extends State<HostBio> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("Host Bio"),
-          backgroundColor: Colors.teal,
-        ),
-        body: Column(children: [
-          Expanded(
-            child: ListView(
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-                Theme(
-                  data: Theme.of(context).copyWith(
-                    inputDecorationTheme: customInputDecorationTheme(),
-                  ),
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Container(
-                        width: 320,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: DropdownButtonFormField<String>(
-                          value: selectedCarId,
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedCarId = newValue;
-                              print("My problem" + selectedCarId!);
-                            });
-                          },
-                          items: userCars.map((car) {
-                            final carId = car['id'].toString();
-                            final carName = getCarNameById(carId);
-                            return DropdownMenuItem<String>(
-                                value: carId, child: Text('$carName'));
-                          }).toList(),
-                          decoration: InputDecoration(
-                            labelText: 'Select a car',
-                            border: OutlineInputBorder(),
+    Size size = MediaQuery.of(context).size;
+    return Theme(
+      data: Theme.of(context).copyWith(
+        inputDecorationTheme: customInputDecorationTheme(),
+      ),
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text("Host Bio"),
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.black,
+          ),
+          body: Form(
+            key: _formKey,
+            autovalidateMode: _autoValidate
+                ? AutovalidateMode.always
+                : AutovalidateMode.disabled,
+            child: Column(children: [
+              Expanded(
+                child: ListView(
+                  children: [
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 20),
+                        child: Container(
+                          width: 320,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            value: selectedCarId,
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedCarId = newValue;
+                                print("My problem" + selectedCarId!);
+                              });
+                            },
+                            items: userCars.map((car) {
+                              final carId = car['id'].toString();
+                              final carName = getCarNameById(carId);
+                              return DropdownMenuItem<String>(
+                                  value: carId, child: Text('$carName'));
+                            }).toList(),
+                            decoration: InputDecoration(
+                              labelText: 'Select a car',
+                              border: OutlineInputBorder(),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: TextField(
-                    readOnly: true,
-                    controller: _name,
-                    decoration: InputDecoration(
-                      labelText: 'Name',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
-                      child: TextField(
-                        readOnly: _isReadOnly,
-                        controller: _email,
-                        focusNode:
-                            _focusNode, // Assigning the focus node to the TextField
-                        decoration: InputDecoration(
-                          labelText: 'Email Id',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: Icon(_isReadOnly ? Icons.edit : Icons.save),
-                        onPressed: _toggleEditable,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
-                      child: TextField(
-                        readOnly: _isReadOnly,
-                        controller: _phone,
-                        focusNode:
-                            _focusNode, // Assigning the focus node to the TextField
-                        decoration: InputDecoration(
-                          labelText: 'Phone Number',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: Icon(_isReadOnly ? Icons.edit : Icons.save),
-                        onPressed: _toggleEditable,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: TextField(
-                    controller: gphone,
-                    decoration: InputDecoration(
-                      labelText: 'Guest Supporrt Phone Number',
-                      hintText: 'Guest will contact this number for queries',
-                      hintStyle: TextStyle(fontSize: 10),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      children: [
-                        Text("Insert host image"),
-                        SizedBox(
-                          width: 30,
-                        ),
-                        ElevatedButton(
-                            onPressed: _pickImage, child: Text("Gallery"))
-                      ],
-                    )),
-                SizedBox(
-                  height: 30,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Container(
-                    height: 300,
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        TextField(
-                          style: TextStyle(fontSize: 12),
-                          controller: _bio,
-                          keyboardType: TextInputType.multiline,
-                          maxLines: 9,
-                          decoration: InputDecoration(
-                              label: Text(
-                                "Host Bio",
-                                style: TextStyle(fontSize: 15),
-                              ),
-                              border: OutlineInputBorder(),
-                              hintText: _biohint,
-                              hintStyle: TextStyle(fontSize: 12),
-                              focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                      width: 1, color: Colors.redAccent))),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: 80,
-            width: 400,
-            child: BottomAppBar(
-              child: Container(
-                child: Column(
-                  children: [
                     SizedBox(
-                      height: 10,
+                      height: 20,
                     ),
-                    Card(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: TextFormField(
+                        controller: gphone,
+                        inputFormatters: [_phoneFormatter],
+                        decoration: InputDecoration(
+                          labelText: 'Guest Support Phone Number',
+                          hintText:
+                              'Guest will contact this number for queries',
+                          hintStyle: TextStyle(fontSize: 12),
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: _validateGuestPhone,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 25,
+                    ),
+                    // Display picked image if available
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      child: Row(
+                        children: [
+                          if (_displayedImage != null) _displayedImage!,
+                          if (_pickedImage == null)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Text("Insert Host Image"),
+                            ),
+                          SizedBox(
+                            width: 30,
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Color.fromRGBO(254, 205, 59, 1.0),
+                              onPrimary: Colors.black,
+                              side: BorderSide(color: Colors.deepPurple),
+                            ),
+                            onPressed: _pickImage,
+                            child: Text("Gallery"),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 25,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Container(
-                          width: 320,
-                          height: 45,
-                          child: ElevatedButton(
-                            style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStatePropertyAll<Color>(
-                                        Colors.green)),
-                            onPressed: _saveBio,
-                            child: Text("Save"),
-                          )),
+                        height: 200,
+                        alignment: Alignment.center,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              style: TextStyle(fontSize: 12),
+                              controller: _bio,
+                              keyboardType: TextInputType.multiline,
+                              maxLines: 9,
+                              decoration: InputDecoration(
+                                  label: Text(
+                                    "Host Bio",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  border: OutlineInputBorder(),
+                                  hintText: _biohint,
+                                  hintStyle: TextStyle(fontSize: 12),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          width: 1, color: Colors.redAccent))),
+                              validator: _validateBio, // Add validation here
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ),
-        ]));
+              Container(
+                height: 80,
+                width: 400,
+                child: BottomAppBar(
+                  child: Container(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Card(
+                          child: Container(
+                              width: 300,
+                              height: 45,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    primary: Color.fromRGBO(254, 205, 59,
+                                        1.0), // Set the background color
+                                    onPrimary: Colors.black,
+                                    side: BorderSide(color: Colors.deepPurple)),
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    _saveBio();
+                                  } else {
+                                    setState(() {
+                                      _autoValidate = true;
+                                    });
+                                  }
+                                },
+                                child: Text("SAVE",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: size.width * 0.06)),
+                              )),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ]),
+          )),
+    );
   }
 }
 
@@ -415,3 +440,75 @@ InputDecorationTheme customInputDecorationTheme() {
     border: outlineInputBorder,
   );
 }
+
+//EXTRA
+// Padding(
+// padding: const EdgeInsets.symmetric(horizontal: 30),
+// child: TextField(
+// readOnly: true,
+// controller: _name,
+// decoration: InputDecoration(
+// labelText: 'Name',
+// border: OutlineInputBorder(),
+// ),
+// ),
+// ),
+// SizedBox(
+// height: 30,
+// ),
+// Stack(
+// children: [
+// Padding(
+// padding: const EdgeInsets.symmetric(horizontal: 30),
+// child: TextField(
+// readOnly: _isReadOnly,
+// controller: _email,
+// focusNode:
+// _focusNode, // Assigning the focus node to the TextField
+// decoration: InputDecoration(
+// labelText: 'Email Id',
+// border: OutlineInputBorder(),
+// ),
+// ),
+// ),
+// Positioned(
+// top: 0,
+// right: 0,
+// child: IconButton(
+// icon: Icon(_isReadOnly ? Icons.edit : Icons.save),
+// onPressed: _toggleEditable,
+// ),
+// ),
+// ],
+// ),
+// SizedBox(
+// height: 30,
+// ),
+// Stack(
+// children: [
+// Padding(
+// padding: const EdgeInsets.symmetric(horizontal: 30),
+// child: TextField(
+// readOnly: _isReadOnly,
+// controller: _phone,
+// focusNode:
+// _focusNode, // Assigning the focus node to the TextField
+// decoration: InputDecoration(
+// labelText: 'Phone Number',
+// border: OutlineInputBorder(),
+// ),
+// ),
+// ),
+// Positioned(
+// top: 0,
+// right: 0,
+// child: IconButton(
+// icon: Icon(_isReadOnly ? Icons.edit : Icons.save),
+// onPressed: _toggleEditable,
+// ),
+// ),
+// ],
+// ),
+// SizedBox(
+// height: 30,
+// ),

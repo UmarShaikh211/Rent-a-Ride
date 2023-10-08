@@ -4,8 +4,12 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:rentcartest/user/Userlogin/pages/logint.dart';
 
+import '../../../components/custom_surfix_icon.dart';
+import '../../../components/default_button.dart';
 import '../../../main.dart';
+import '../../constants.dart';
 import '../../global.dart';
+import '../../size_config.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -52,101 +56,132 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Register'),
+        leading: BackButton(
+          color: Colors.black,
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextFormField(
-                  controller: usernameController,
-                  decoration: InputDecoration(labelText: 'Username'),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Username cannot be empty';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: emailController,
-                  decoration: InputDecoration(labelText: 'Email'),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Email cannot be empty';
-                    } else {
-                      // Trim the value and then check if it's a valid email
-                      final trimmedValue = value.trim();
-                      if (!isValidEmail(trimmedValue)) {
-                        return 'Invalid email address';
+      resizeToAvoidBottomInset: false,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 180,
+                    width: 400,
+                    child: Image.asset('assets/bar.png'),
+                  ),
+                  Text("Register Account", style: headingStyle),
+                  SizedBox(height: SizeConfig.screenHeight * 0.03),
+                  TextFormField(
+                    controller: usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      suffixIcon:
+                          CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Username cannot be empty';
                       }
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: phoneController,
-                  decoration: InputDecoration(labelText: 'Phone'),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Phone number cannot be empty';
-                    } else if (!isValidPhone(value)) {
-                      return 'Invalid phone number';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: 'Password'),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Password cannot be empty';
-                    } else if (value.length < 8) {
-                      return 'Password must be at least 8 characters long';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16.0),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      final name = usernameController.text.trim();
-                      final email = emailController.text.trim();
-                      final phone = phoneController.text.trim();
-                      final pass = passwordController.text.trim();
-
-                      final userId = await createUser(name, email, phone, pass);
-
-                      if (userId != null) {
-                        // User registration successful, navigate to the desired page
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LoginPage(),
-                          ),
-                        );
-
-                        final userProvider = Provider.of<UserDataProvider>(
-                            context,
-                            listen: false);
-                        userProvider.setUserId(userId);
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      suffixIcon:
+                          CustomSurffixIcon(svgIcon: "assets/icons/Mail.svg"),
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Email cannot be empty';
                       } else {
-                        // User registration failed, show an error message
-                        // You can use a Snackbar or AlertDialog to display the error message
+                        // Trim the value and then check if it's a valid email
+                        final trimmedValue = value.trim();
+                        if (!isValidEmail(trimmedValue)) {
+                          return 'Invalid email address';
+                        }
                       }
-                    }
-                  },
-                  child: Text('Register'),
-                ),
-              ],
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: phoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Phone',
+                      suffixIcon:
+                          CustomSurffixIcon(svgIcon: "assets/icons/Phone.svg"),
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Phone number cannot be empty';
+                      } else if (!isValidPhone(value)) {
+                        return 'Invalid phone number';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      suffixIcon:
+                          CustomSurffixIcon(svgIcon: "assets/icons/Lock.svg"),
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Password cannot be empty';
+                      } else if (value.length < 8) {
+                        return 'Password must be at least 8 characters long';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16.0),
+                  DefaultButton(
+                    press: () async {
+                      if (_formKey.currentState!.validate()) {
+                        final name = usernameController.text.trim();
+                        final email = emailController.text.trim();
+                        final phone = phoneController.text.trim();
+                        final pass = passwordController.text.trim();
+
+                        final userId =
+                            await createUser(name, email, phone, pass);
+
+                        if (userId != null) {
+                          // User registration successful, navigate to the desired page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginPage(),
+                            ),
+                          );
+
+                          final userProvider = Provider.of<UserDataProvider>(
+                              context,
+                              listen: false);
+                          userProvider.setUserId(userId);
+                        } else {
+                          // User registration failed, show an error message
+                          // You can use a Snackbar or AlertDialog to display the error message
+                        }
+                      }
+                    },
+                    text: 'Register',
+                  ),
+                ],
+              ),
             ),
           ),
         ),

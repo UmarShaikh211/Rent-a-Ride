@@ -26,8 +26,13 @@ class _HostHomeState extends State<HostHome> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal,
-        title: Text("RentCar Host"),
+        title: Text(
+          "WELCOME HOST",
+          style: TextStyle(
+              fontFamily: "Times New Roman", fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Color.fromRGBO(254, 205, 59, 1.0),
+        foregroundColor: Colors.black,
         leading: Builder(
           builder: (context) => IconButton(
             icon: Icon(

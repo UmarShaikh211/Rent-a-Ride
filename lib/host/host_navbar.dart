@@ -43,6 +43,7 @@ class _HostNavState extends State<HostNav> {
         onTap: _onItemTapped,
         items: [
           BottomNavigationBarItem(
+            backgroundColor: Colors.black,
             icon: Icon(
               Icons.home,
               color: Colors.blueAccent,
@@ -50,13 +51,15 @@ class _HostNavState extends State<HostNav> {
             label: "Home",
           ),
           BottomNavigationBarItem(
+            backgroundColor: Colors.black,
             icon: Icon(
               Icons.calendar_month_sharp,
-              color: Colors.red,
+              color: Colors.orange,
             ),
             label: "Bookings",
           ),
           BottomNavigationBarItem(
+            backgroundColor: Colors.black,
             icon: Icon(
               Icons.money_sharp,
               color: Colors.greenAccent,
@@ -64,16 +67,18 @@ class _HostNavState extends State<HostNav> {
             label: 'Earnings',
           ),
           BottomNavigationBarItem(
+            backgroundColor: Colors.black,
             icon: Icon(
               Icons.animation,
-              color: Colors.purple,
+              color: Colors.cyanAccent,
             ),
             label: 'Analytics',
           ),
           BottomNavigationBarItem(
+            backgroundColor: Colors.black,
             icon: Icon(
               Icons.person,
-              color: Colors.purple,
+              color: Colors.pinkAccent,
             ),
             label: 'Profile',
           ),

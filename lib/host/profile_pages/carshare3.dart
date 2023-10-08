@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rentcartest/host/host_navbar.dart';
 import 'package:rentcartest/main.dart';
@@ -89,18 +90,59 @@ class _CarShare3State extends State<CarShare3> {
 
   @override
   Widget build(BuildContext context) {
+    DateTime sd = DateTime.parse(widget.startdate);
+    DateTime ed = DateTime.parse(widget.enddate);
+
     return Scaffold(
       appBar: AppBar(
         title: Text("ShareCar"),
-        backgroundColor: Colors.teal,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.black,
       ),
       body: Column(
         children: [
+          SizedBox(
+            height: 30,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Container(
+              height: 100,
+              width: 400,
+              decoration: BoxDecoration(
+                  color: Colors.teal, borderRadius: BorderRadius.circular(12)),
+              child: Center(
+                child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 20),
+                    child: Text(
+                      "Your Car will be added to the Marketplace from " +
+                          DateFormat('EEEE, d-MMMM-yyyy').format(sd) +
+                          " to " +
+                          DateFormat('EEEE, d-MMMM-yyyy').format(ed) +
+                          ".",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.white),
+                    )),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 15,
+          ),
           ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.black,
+                  side: BorderSide(color: Colors.deepPurple)),
               onPressed: () {
                 createCarDate(widget.carid, widget.startdate, widget.enddate);
               },
-              child: Text("Success"))
+              child: Text(
+                "SUBMIT",
+              ))
         ],
       ),
     );

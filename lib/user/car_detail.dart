@@ -9,6 +9,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:rentcartest/main.dart';
 import 'package:rentcartest/user/image.dart';
+import 'package:rentcartest/user/usertc.dart';
 import 'package:rentcartest/user/widget.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
@@ -62,12 +63,13 @@ class _Car_detailState extends State<Car_detail> {
   String selectedPackage = "0";
   List<Review> reviews = [];
   double? totalRating = 0.0;
-
+  List<Location> locations = [];
   @override
   void initState() {
     super.initState();
     fetchReviews();
     fetchTotalRating();
+    fetchLocation(widget.id);
 
     // Find the selected car object based on the car ID
     final selectedCar = widget.sharedCars.firstWhere(
@@ -164,21 +166,25 @@ class _Car_detailState extends State<Car_detail> {
   Future<void> fetchReviews() async {
     try {
       final response = await http.get(
-        Uri.parse('$globalapiUrl/review/?car_id=${widget.carn}'),
+        Uri.parse('$globalapiUrl/get_reviews_by_car_id/${widget.id}/'),
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> responseData = json.decode(response.body);
         final List<Review> fetchedReviews = [];
+        print(fetchedReviews);
 
         for (final jsonReview in responseData) {
-          final userId = jsonReview['user'];
+          final userId =
+              jsonReview['user']; // Assuming this field contains the user ID
           final userName = await fetchUserName(userId.toString());
+          print(userId);
+          print(userName);
 
           fetchedReviews.add(
             Review(
               text: jsonReview['text'] ?? 'No review text available',
-              userName: userName,
+              userName: userId,
             ),
           );
         }
@@ -188,9 +194,11 @@ class _Car_detailState extends State<Car_detail> {
         });
       } else {
         // Handle error response
+        // You can display an error message or take appropriate action here.
       }
     } catch (e) {
       // Handle network or other errors
+      // You can display an error message or take appropriate action here.
     }
   }
 
@@ -210,6 +218,51 @@ class _Car_detailState extends State<Car_detail> {
       print('API Error: ${response.statusCode} - ${response.body}');
       // Handle error
     }
+  }
+
+  Future<void> fetchLocation(int carId) async {
+    final response = await http.get(Uri.parse(
+        '$globalapiUrl/get_locations/${widget.id}/' // Replace with your Django API URL
+        ));
+    if (response.statusCode == 200) {
+      // If the server returns a 200 OK response, parse the JSON data
+      final List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+        locations = jsonData.map((item) => Location.fromJson(item)).toList();
+      });
+    } else {
+      // If the server did not return a 200 OK response, throw an exception
+      throw Exception('Failed to load data');
+    }
+  }
+
+  void _openFullScreenMap(
+      BuildContext context, double latitude, double longitude) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('Location'),
+              foregroundColor: Colors.black,
+              backgroundColor: Theme.of(context).primaryColor,
+            ),
+            body: FlutterMap(
+              options: MapOptions(
+                center: LatLng(latitude, longitude),
+                zoom: 15, // Adjust the zoom level as needed
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.example.app',
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -679,70 +732,99 @@ class _Car_detailState extends State<Car_detail> {
                       SizedBox(
                         height: 20,
                       ),
-                      Center(
-                        child: Card(
-                          elevation: 8,
-                          child: Container(
-                            height: size.height * 0.2,
-                            width: size.width * 0.9,
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: size.width * 0.45,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+
+                      Container(
+                        height: size.height * 0.22,
+                        child: ListView.builder(
+                          itemCount: locations.length,
+                          itemBuilder: (context, index) {
+                            final location = locations[index];
+                            double latitude =
+                                double.tryParse(location.lat) ?? 0.0;
+                            double longitude =
+                                double.tryParse(location.long) ?? 0.0;
+
+                            return Center(
+                              child: Card(
+                                elevation: 8,
+                                child: Container(
+                                  height: size.height * 0.2,
+                                  width: size.width * 0.9,
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        "Bandra West,\n Mumbai",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: size.width * 0.035),
+                                      Container(
+                                        width: size.width * 0.45,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              location.address,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: size.width * 0.035),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          _openFullScreenMap(
+                                              context, latitude, longitude);
+                                        },
+                                        child: Container(
+                                          height: size.height * 0.2,
+                                          width: size.width * 0.45,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.only(
+                                                topRight: Radius.circular(15),
+                                                bottomRight:
+                                                    Radius.circular(15)),
+                                            child: FlutterMap(
+                                              options: MapOptions(
+                                                center:
+                                                    LatLng(latitude, longitude),
+                                                zoom: 6,
+                                              ),
+                                              nonRotatedChildren: [
+                                                RichAttributionWidget(
+                                                  attributions: [
+                                                    TextSourceAttribution(
+                                                        'OpenStreetMap contributors',
+                                                        onTap: () {
+                                                      _openFullScreenMap(
+                                                          context,
+                                                          latitude,
+                                                          longitude);
+                                                    }),
+                                                  ],
+                                                ),
+                                              ],
+                                              children: [
+                                                TileLayer(
+                                                  urlTemplate:
+                                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                                  userAgentPackageName:
+                                                      'com.example.app',
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                Container(
-                                  height: size.height * 0.2,
-                                  width: size.width * 0.45,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.only(
-                                        topRight: Radius.circular(15),
-                                        bottomRight: Radius.circular(15)),
-                                    child: FlutterMap(
-                                      options: MapOptions(
-                                        center: LatLng(19.0607, 72.8361),
-                                        zoom: 10,
-                                      ),
-                                      nonRotatedChildren: [
-                                        RichAttributionWidget(
-                                          attributions: [
-                                            TextSourceAttribution(
-                                              'OpenStreetMap contributors',
-                                              onTap: () => launchUrl(Uri.parse(
-                                                  'https://openstreetmap.org/copyright')),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                      children: [
-                                        TileLayer(
-                                          urlTemplate:
-                                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                          userAgentPackageName:
-                                              'com.example.app',
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          },
                         ),
                       ),
+
                       SizedBox(
                         height: 20,
                       ),
@@ -802,7 +884,7 @@ class _Car_detailState extends State<Car_detail> {
                       //   )
 
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
                         child: Container(
                           height: 115,
                           width: 300,
@@ -811,24 +893,34 @@ class _Car_detailState extends State<Car_detail> {
                             itemCount: reviews.length,
                             itemBuilder: (context, index) {
                               final review = reviews[index];
-                              return Reviewcon(
-                                  Review: review.text,
-                                  Name: '${review.userName}');
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 5),
+                                child: Reviewcon(
+                                    Review: review.text,
+                                    Name: '${review.userName}'),
+                              );
                             },
                           ),
                         ),
                       ),
                     ]))),
                 SizedBox(
-                  height: 20,
+                  height: 10,
+                ),
+                Divider(),
+                SizedBox(
+                  height: 10,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Card(
                     elevation: 3,
                     child: Container(
-                      decoration:
-                          BoxDecoration(border: Border.all(color: Colors.red)),
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                        color: Colors.deepPurpleAccent,
+                      )),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         child: Column(
@@ -874,7 +966,7 @@ class _Car_detailState extends State<Car_detail> {
                   ),
                 ),
                 SizedBox(
-                  height: 20,
+                  height: 5,
                 ),
                 Card(
                   child: Container(
@@ -926,11 +1018,20 @@ class _Car_detailState extends State<Car_detail> {
                                     bottom: 0,
                                     top: 6,
                                   ),
-                                  child: Text(
-                                    "View Policy",
-                                    style: TextStyle(
-                                        color: Colors.blue,
-                                        fontSize: size.width * 0.032),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => UserTerms(),
+                                          ));
+                                    },
+                                    child: Text(
+                                      "View Policy",
+                                      style: TextStyle(
+                                          color: Colors.blue,
+                                          fontSize: size.width * 0.032),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -975,22 +1076,13 @@ class _Car_detailState extends State<Car_detail> {
                                       TextStyle(fontSize: size.width * 0.035),
                                 ),
                               ),
-                              Padding(
-                                padding: EdgeInsets.only(top: 10, left: 200),
-                                child: Text(
-                                  "See Details",
-                                  style: TextStyle(
-                                      color: Colors.blue,
-                                      fontSize: size.width * 0.032),
-                                ),
-                              ),
                             ],
                           ),
                         ),
                       ])),
                 ),
                 SizedBox(
-                  height: 30,
+                  height: 15,
                 )
               ],
             ),
@@ -1012,7 +1104,7 @@ class _Car_detailState extends State<Car_detail> {
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color: Colors.deepPurple,
+                          color: Color.fromRGBO(254, 205, 59, 1.0),
                         ),
                         borderRadius: BorderRadius.circular(30),
                       ),
@@ -1020,16 +1112,18 @@ class _Car_detailState extends State<Car_detail> {
                         rolling: true,
                         height: 55,
                         width: size.width * 0.95,
-                        child: const Text('Book Now!',
-                            style:
-                                TextStyle(color: Colors.black, fontSize: 19)),
-                        backgroundColor: Color.fromRGBO(254, 205, 59, 1.0),
+                        child: const Text('Book Now',
+                            style: TextStyle(
+                                color: Color.fromRGBO(254, 205, 59, 1.0),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 19)),
+                        backgroundColor: Colors.black87,
                         reverseSlideAnimationCurve: Curves.easeInOut,
                         reverseSlideAnimationDuration:
                             const Duration(milliseconds: 500),
-                        toggleColor: Colors.purpleAccent,
+                        toggleColor: Color.fromRGBO(254, 205, 59, 1.0),
                         icon: Image.asset(
-                          "assets/tesla.png",
+                          "assets/wheel.png",
                           scale: 4,
                         ),
                         action: (controller) async {
@@ -1112,6 +1206,32 @@ class Review {
       text: json['text'] ?? 'No review text available',
       userName:
           'Anonymous', // Default to 'Anonymous' in case user details are not fetched
+    );
+  }
+}
+
+class Location {
+  final int id;
+  final String lat;
+  final String long;
+  final String address;
+  final bool isFilled;
+
+  Location({
+    required this.id,
+    required this.lat,
+    required this.long,
+    required this.address,
+    required this.isFilled,
+  });
+
+  factory Location.fromJson(Map<String, dynamic> json) {
+    return Location(
+      id: json['id'],
+      lat: json['lat'],
+      long: json['long'],
+      address: json['address'],
+      isFilled: json['isFilled'],
     );
   }
 }

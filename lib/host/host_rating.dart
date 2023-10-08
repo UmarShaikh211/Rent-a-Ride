@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -5,7 +6,9 @@ import 'package:provider/provider.dart';
 import 'package:rentcartest/user/widget.dart';
 import 'package:rentcartest/user/some.dart' as someApi;
 
+import '../main.dart';
 import '../user/global.dart';
+import 'package:http/http.dart' as http;
 
 class HostRating extends StatefulWidget {
   const HostRating({super.key});
@@ -18,6 +21,7 @@ class _HostRatingState extends State<HostRating> {
   String? selectedCarId = " ";
   String? userId;
   List<Map<String, dynamic>> userCars = [];
+  double? totalRating = 0.0;
 
   @override
   void initState() {
@@ -28,6 +32,10 @@ class _HostRatingState extends State<HostRating> {
     if (userId != null) {
       fetchUserCars(userId!);
     }
+    if (userCars.isNotEmpty) {
+      selectedCarId = userCars[0]['id'].toString();
+    }
+    fetchTotalRating(selectedCarId!);
   }
 
   Future<void> fetchUserCars(String userId) async {
@@ -46,11 +54,52 @@ class _HostRatingState extends State<HostRating> {
             selectedCarId = userCars[0]['id'].toString();
           });
         }
+        print(selectedCarId);
       } else {
         print("User ID is null");
       }
     } catch (e) {
       print("Error fetching user's car objects: $e");
+    }
+  }
+
+  String getCarNameById(String carId) {
+    final car = userCars.firstWhere(
+      (car) => car['id'].toString() == carId,
+      orElse: () => {},
+    );
+
+    if (car != null) {
+      final addedCars = car['added_cars'] as List<dynamic>;
+      if (addedCars.isNotEmpty) {
+        final carBrand = addedCars[0]['CarBrand'];
+        final carModel = addedCars[0]['CarModel'];
+
+        if (carBrand != null && carModel != null) {
+          return '$carBrand $carModel';
+        }
+      }
+    }
+
+    return 'Unknown Car';
+  }
+
+  Future<void> fetchTotalRating(String selectedCarId) async {
+    final response = await http.get(
+      Uri.parse('$globalapiUrl/cars/$selectedCarId/total_rating/'),
+    );
+    print(response);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('API Response: $data'); // Add this line for debugging
+      final total = data['total_rating'] ?? 0.0;
+      setState(() {
+        totalRating = total.toDouble();
+      });
+    } else {
+      print('API Error: ${response.statusCode} - ${response.body}');
+      // Handle error
     }
   }
 
@@ -62,7 +111,12 @@ class _HostRatingState extends State<HostRating> {
       ),
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Car Rating"),
+          title: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            child: Text("Add Car"),
+          ),
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.black,
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -72,7 +126,8 @@ class _HostRatingState extends State<HostRating> {
               ),
               Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   child: Container(
                     width: 320,
                     decoration: BoxDecoration(
@@ -83,15 +138,17 @@ class _HostRatingState extends State<HostRating> {
                       onChanged: (newValue) {
                         setState(() {
                           selectedCarId = newValue;
+                          fetchTotalRating(selectedCarId!);
+
                           print("My problem" + selectedCarId!);
                         });
                       },
                       items: userCars.map((car) {
                         final carId = car['id'].toString();
+                        final carName = getCarNameById(carId);
+
                         return DropdownMenuItem<String>(
-                          value: carId,
-                          child: Text('Car ID: $carId'),
-                        );
+                            value: carId, child: Text('$carName'));
                       }).toList(),
                       decoration: InputDecoration(
                         labelText: 'Select a car',
@@ -101,10 +158,38 @@ class _HostRatingState extends State<HostRating> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              // rate(),
+              SizedBox(height: 10),
+              Container(
+                width: 130,
+                height: 70,
+                decoration: BoxDecoration(
+                    color: Colors.deepPurple,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Theme.of(context).primaryColor)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                      size: 50, // Adjust the size as needed
+                    ),
+                    SizedBox(
+                        width:
+                            8.0), // Add some spacing between the star and rating
+                    Text(
+                      totalRating!.toStringAsFixed(
+                          1), // Format rating to one decimal place
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
               SizedBox(
-                height: 30,
+                height: 20,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -119,13 +204,6 @@ class _HostRatingState extends State<HostRating> {
                 ),
               ),
               SizedBox(
-                height: 15,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Text("Things to keep in mind before Sharing!"),
-              ),
-              SizedBox(
                 height: 20,
               ),
               Center(
@@ -135,82 +213,34 @@ class _HostRatingState extends State<HostRating> {
                     height: 290,
                     width: 320,
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.blueAccent),
-                    child: ListView(children: [
-                      ListTile(
-                        horizontalTitleGap: 0,
-                        titleAlignment: ListTileTitleAlignment.center,
-                        title: Text(
-                          "Searve Booking Assigned.",
-                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        borderRadius: BorderRadius.circular(12),
+                        color: Theme.of(context).primaryColor,
+                        border: Border.all(color: Colors.deepPurple)),
+                    child: ListView(
+                      physics: NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildListItem(
+                          title: "Serve Booking Assigned.",
+                          subtitle: "Always Serve Bookings on Time.",
+                          icon: Icons.schedule,
                         ),
-                        subtitle: Text(
-                          "Always Serve Bookings on Time.",
-                          style: TextStyle(fontSize: 10, color: Colors.white),
+                        _buildListItem(
+                          title: "Keep Car at Right Location.",
+                          subtitle: "Help the Guests to find the Car.",
+                          icon: Icons.location_on,
                         ),
-                        trailing: Image.asset(
-                          "assets/rolls.png",
-                          fit: BoxFit.fill,
-                          height: 100,
-                          width: 100,
+                        _buildListItem(
+                          title: "Maintain Driving Condition.",
+                          subtitle: "Give Guest a Great Experience!",
+                          icon: Icons.directions_car,
                         ),
-                      ),
-                      ListTile(
-                        horizontalTitleGap: 0,
-                        titleAlignment: ListTileTitleAlignment.center,
-                        title: Text(
-                          "Keep Car at Right Location.",
-                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        _buildListItem(
+                          title: "Keep Car Clean.",
+                          subtitle: "Clean Car Attracts Great Ratings :)",
+                          icon: Icons.cleaning_services,
                         ),
-                        subtitle: Text(
-                          "Help the Guests to find the Car.",
-                          style: TextStyle(fontSize: 10, color: Colors.white),
-                        ),
-                        trailing: Image.asset(
-                          "assets/rolls.png",
-                          fit: BoxFit.fill,
-                          height: 100,
-                          width: 100,
-                        ),
-                      ),
-                      ListTile(
-                        horizontalTitleGap: 0,
-                        titleAlignment: ListTileTitleAlignment.center,
-                        title: Text(
-                          "Maintain Driving Condition.",
-                          style: TextStyle(fontSize: 14, color: Colors.white),
-                        ),
-                        subtitle: Text(
-                          "Give Guest a Great Experience! ",
-                          style: TextStyle(fontSize: 10, color: Colors.white),
-                        ),
-                        trailing: Image.asset(
-                          "assets/rolls.png",
-                          fit: BoxFit.fill,
-                          height: 100,
-                          width: 100,
-                        ),
-                      ),
-                      ListTile(
-                        horizontalTitleGap: 0,
-                        titleAlignment: ListTileTitleAlignment.center,
-                        title: Text(
-                          "Keep Car Clean.",
-                          style: TextStyle(fontSize: 14, color: Colors.white),
-                        ),
-                        subtitle: Text(
-                          "Clean Car Attract Great Raings :)",
-                          style: TextStyle(fontSize: 10, color: Colors.white),
-                        ),
-                        trailing: Image.asset(
-                          "assets/rolls.png",
-                          fit: BoxFit.fill,
-                          height: 100,
-                          width: 100,
-                        ),
-                      ),
-                    ]),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -241,5 +271,28 @@ InputDecorationTheme customInputDecorationTheme() {
     enabledBorder: outlineInputBorder,
     focusedBorder: outlineInputBorder,
     border: outlineInputBorder,
+  );
+}
+
+Widget _buildListItem(
+    {required String title, required String subtitle, required IconData icon}) {
+  return ListTile(
+    horizontalTitleGap: 0,
+    titleAlignment: ListTileTitleAlignment.center,
+    title: Text(
+      title,
+      style: TextStyle(
+          fontSize: 14, color: Colors.deepPurple, fontWeight: FontWeight.bold),
+    ),
+    subtitle: Text(
+      subtitle,
+      style: TextStyle(fontSize: 11, color: Colors.black),
+    ),
+    trailing: Icon(
+      icon,
+      color: Colors.deepPurple,
+      size: 30,
+    ),
+    contentPadding: EdgeInsets.symmetric(horizontal: 20),
   );
 }

@@ -244,15 +244,17 @@ class IncomeList extends StatelessWidget {
                         ),
                         Container(
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.cyanAccent),
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.deepPurple),
                           child: Padding(
-                            padding: const EdgeInsets.all(3.0),
+                            padding: const EdgeInsets.all(4.0),
                             child: Text(
                               '${income['sidate']}' +
                                   "-" +
                                   '${income['eidate']}',
-                              style: TextStyle(fontSize: 12),
+                              style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: Theme.of(context).primaryColor),
                             ),
                           ),
                         ),

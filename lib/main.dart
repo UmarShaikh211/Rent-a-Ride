@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
+import 'package:rentcartest/Admin/adminpanel.dart';
 import 'package:rentcartest/host/host_analytics.dart';
 import 'package:rentcartest/host/host_image.dart';
 import 'package:rentcartest/screens/splash/splash_screen.dart';
@@ -23,11 +24,12 @@ import 'host/host_eligibility.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-const String globalapiUrl = 'http://172.20.10.3:8000/'; //Umar
-//const String globalapiUrl = 'http://192.168.0.120:8000';
+//const String globalapiUrl = 'http://172.20.10.3:8000/'; //Umar
+const String globalapiUrl = 'http://192.168.0.120:8000';
 
 final ThemeData myTheme = ThemeData(
-  primaryColor: Color.fromRGBO(254, 205, 59, 1.0), // Define your primary color
+  primaryColor: Color.fromRGBO(254, 205, 59, 1.0),
+  // Define your primary color
 );
 
 void main() async {
@@ -59,15 +61,15 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Flutter Demo',
+          title: 'Rent-a-Ride',
           theme: myTheme,
           navigatorKey: navigatorKey,
-          // home: RegisterPage()
-          // initialRoute: SplashScreen.routeName,
-          // routes: routes,
+          // // home: AdminDashboard()
+          //  initialRoute: SplashScreen.routeName,
+          //  routes: routes,
           initialRoute: '/',
           routes: {
-            '/': (context) => RegisterPage(),
+            '/': (context) => SplashScreen(),
 
             // '/hregister': (context) => UserRegistrationPage(),
             // '/ccreate': (context) =>
